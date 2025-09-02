@@ -1,0 +1,32 @@
+package com.tanfed.user.utils;
+
+
+public enum UserRole {
+
+	ROUSER,
+	ROADMIN,
+	
+	ACCUSER,
+	FERTUSER,
+	MARKUSER,
+	ESTUSER,
+	AUDITUSER,
+	SPAIUSER,
+	
+	ACCADMIN,
+	FERTADMIN,
+	MARKADMIN,
+	ESTADMIN,
+	AUDITADMIN,
+	SPAIADMIN,
+	
+	ACCHOD,
+	FERTHOD,
+	MARKHOD,
+	ESTHOD,
+	AUDITHOD,
+	SPAIHOD,
+	
+	MD,
+	SUPERADMIN
+}
