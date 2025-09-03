@@ -290,9 +290,9 @@ public class AuthController {
 		return newValue;
 	}
 
-	@GetMapping("/testapi")
+	@GetMapping("/test")
 	public String getMethodName() {
-		return "Teat Success!";
+		return "User Service Depolyed Successfully!";
 	}
 	
 	
