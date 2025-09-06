@@ -1,10 +1,15 @@
 package com.tanfed.user.utils;
 
+import java.sql.Connection;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +25,8 @@ public class DatabaseInitializer {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private DataSource dataSource;
 
 	@PostConstruct
 	public void init() {
@@ -41,6 +48,12 @@ public class DatabaseInitializer {
 					"karthiksnk210@gmail.com", 564534312376L, "jyhvgfz7s67", encodedPassword, role,
 					"91, St.marys rd, RA Puram, mandaveli, chennai-600028",
 					"91, St.marys rd, RA Puram, mandaveli, chennai-600028", "Tamil Nadu", true);
+		}
+		try (Connection connection = dataSource.getConnection()) {
+			ScriptUtils.executeSqlScript(connection, new ClassPathResource("data.sql"));
+			System.out.println("✅ data.sql executed successfully.");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}
