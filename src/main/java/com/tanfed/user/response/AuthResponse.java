@@ -13,18 +13,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
 
+	private String empId;
+	private String name;
 	private List<UserRole> role;
 	private String officeName;
-	private String officeType;
 	private String designation;
-	private String name;
-	
-	private int door;
-	private String street;
-	private String district;
-	private int pincode;
-	
-	private String jwt;
-	private String message;
-	private Boolean status;
+	private String token;
+	private String imgName;
+	private String imgType;
+	private byte[] imgData;
 }

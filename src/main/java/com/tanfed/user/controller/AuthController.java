@@ -29,6 +29,7 @@ import com.tanfed.user.config.JwtTokenValidator;
 import com.tanfed.user.entity.*;
 import com.tanfed.user.repo.*;
 import com.tanfed.user.request.LoginRequest;
+import com.tanfed.user.response.AuthResponse;
 import com.tanfed.user.service.CustomUserServiceImplementation;
 import com.tanfed.user.service.MailService;
 import com.tanfed.user.service.UserService;
@@ -115,7 +116,7 @@ public class AuthController {
 	private SimpMessagingTemplate messagingTemplate;
 
 	@PostMapping("/signin")
-	public ResponseEntity<String> signinHandler(@RequestBody LoginRequest request) throws Exception {
+	public ResponseEntity<AuthResponse> signinHandler(@RequestBody LoginRequest request) throws Exception {
 		try {
 			Authentication authentication = authenticate(request.getEmpId(), request.getPassword());
 			SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -137,7 +138,10 @@ public class AuthController {
 			userLogRepo
 					.save(new UserLog(null, LocalDate.now(), request.getEmpId(), LocalDateTime.now().toString(), null));
 
-			return new ResponseEntity<String>(jwtToken, HttpStatus.OK);
+			User user = userRepository.findByEmpId(request.getEmpId());
+			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), user.getRole(), user.getOfficeName(),
+					user.getDesignation(), jwtToken, user.getImgName(), user.getImgType(), user.getImgData());
+			return new ResponseEntity<AuthResponse>(res, HttpStatus.OK);
 		} catch (Exception e) {
 			throw new LoginException("signin failed " + e);
 		}
