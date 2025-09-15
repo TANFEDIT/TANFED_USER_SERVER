@@ -3,6 +3,7 @@ package com.tanfed.user.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -22,7 +23,7 @@ public class MailService {
 	public ResponseEntity<String> sendmailPassword(String to, String password, String empId) throws Exception {
 		try {
 			logger.info("sendmailPassword{}", to);
-			MailBody body = MailBody.builder().to(to).subject("Tanfed user password")
+			MailBody body = MailBody.builder().to(to).subject("Tanfed username password")
 					.text("Your EmployeeID is : " + empId + "\n Your Password is : " + password).build();
 
 			sendMail(body);
@@ -31,12 +32,16 @@ public class MailService {
 			throw new Exception("Mail did not sent(sendmailPassword)" + e);
 		}
 	}
+	
+	@Autowired
+	private Environment env;
 
 	public ResponseEntity<String> sendMail(MailBody body) throws Exception {
 		try {
 			logger.info("sendMail{}", body);
+			String email = env.getProperty("EMAIL");
 			SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-			simpleMailMessage.setFrom("tanfeditteam@gmail.com");
+			simpleMailMessage.setFrom(email);
 			simpleMailMessage.setTo(body.to());
 			simpleMailMessage.setSubject(body.subject());
 			simpleMailMessage.setText(body.text());
