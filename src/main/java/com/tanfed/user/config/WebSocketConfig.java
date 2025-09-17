@@ -21,7 +21,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 				.setAllowedOrigins("http://localhost:5173", "http://192.168.1.171:5173", "http://192.168.1.143:5173",
 						"http://192.168.1.143:4173", "http://192.168.1.116:5173", "http://192.168.1.142:5173",
 						"https://tanfedit.github.io/", "http://192.168.1.127:5173", "http://192.168.1.158:5173",
-						"https://tanfed-user-server-bjc4hyf2fcfqb2c5.centralindia-01.azurewebsites.net")
+						"https://www.tntanfed.in")
 				.withSockJS();
 	}
 
