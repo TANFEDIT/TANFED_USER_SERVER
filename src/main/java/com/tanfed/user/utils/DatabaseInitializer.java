@@ -49,12 +49,12 @@ public class DatabaseInitializer {
 					"91, St.marys rd, RA Puram, mandaveli, chennai-600028",
 					"91, St.marys rd, RA Puram, mandaveli, chennai-600028", "Tamil Nadu", true);
 		}
-		try (Connection connection = dataSource.getConnection()) {
-			ScriptUtils.executeSqlScript(connection, new ClassPathResource("data.sql"));
-			System.out.println("✅ data.sql executed successfully.");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try (Connection connection = dataSource.getConnection()) {
+//			ScriptUtils.executeSqlScript(connection, new ClassPathResource("data.sql"));
+//			System.out.println("✅ data.sql executed successfully.");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 
 	}
 }

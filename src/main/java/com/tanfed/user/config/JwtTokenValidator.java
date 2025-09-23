@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,7 +32,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtTokenValidator extends OncePerRequestFilter {
 
-	private static Logger logger = LoggerFactory.getLogger(JwtTokenValidator.class);
+//	private static Logger logger = LoggerFactory.getLogger(JwtTokenValidator.class);
 
 	static SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
 
@@ -57,13 +55,13 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 				String email = String.valueOf(claims.get("empId"));
 				String authorities = String.valueOf(claims.get("authorities"));
 
-				logger.info("inside validator{}", authorities);
+//				logger.info("inside validator{}", authorities);
 
 				List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 				Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, auths);
 
-				logger.info("List<GrantedAuthority> {}", auths);
-				logger.info("Authentication {}", authentication);
+//				logger.info("List<GrantedAuthority> {}", auths);
+//				logger.info("Authentication {}", authentication);
 
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
@@ -92,7 +90,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 				blockListObj().deleteById(item.getId());
 			}
 		});
-		logger.info("blockedJwt {}", blockList());
+//		logger.info("blockedJwt {}", blockList());
 	}
 
 }

@@ -1,13 +1,14 @@
 package com.tanfed.user.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.tanfed.user.utils.UserRole;
+import com.tanfed.user.utils.UserRoleConverter;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,8 +37,8 @@ public class UserTransferData {
 	@Column
 	private String officeName;
 	
-	@Enumerated(EnumType.STRING)
-	private UserRole role;
+	@Convert(converter = UserRoleConverter.class)
+	private List<UserRole> role;
 	
 	@Column
 	private LocalDate date;
