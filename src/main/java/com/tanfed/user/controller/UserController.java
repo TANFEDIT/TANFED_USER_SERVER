@@ -1,6 +1,7 @@
 package com.tanfed.user.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,5 +101,10 @@ public class UserController {
 	public ResponseEntity<String> updatePasswordHandler(@RequestBody PasswordData obj) throws Exception {
 		return userService.updatePassword(obj);
 	}
-
+	
+	@GetMapping("/getusersbyoffice")
+	public List<User> fetchUsers(@RequestParam String officeName) throws Exception {
+		return userService.fetchUsers(officeName);
+	}
+	
 }

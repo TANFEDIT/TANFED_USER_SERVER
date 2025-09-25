@@ -195,4 +195,13 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
+	@Override
+	public List<User> fetchUsers(String officeName) throws Exception {
+		try {
+			return userRepository.findByOfficeName(officeName);
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
+	}
+
 }

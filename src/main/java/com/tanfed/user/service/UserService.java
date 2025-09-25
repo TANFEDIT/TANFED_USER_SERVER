@@ -2,6 +2,7 @@ package com.tanfed.user.service;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,7 @@ public interface UserService {
 //	GET METHODS
 	public User fetchUser(String jwt);
 	public UserRegResponseData fetchDataForUserForm(String jwt) throws Exception;
-	
+	public List<User> fetchUsers(String officeName) throws Exception;
 	
 //	POST METHODS
 	public ResponseEntity<String> saveUserImage(String empId, MultipartFile img) throws IOException;
