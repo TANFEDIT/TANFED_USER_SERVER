@@ -82,6 +82,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 		return list == null ? new ArrayList<>() : list;
 	}
 
+	// @NonNull Long
 	public void blockListJwt(String jwt) {
 		blockListObj().save(new BlackListToken(null, jwt, JwtProvider.getExpiryFromJwt(jwt.substring(7))));
 
