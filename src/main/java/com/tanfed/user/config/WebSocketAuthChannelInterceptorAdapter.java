@@ -19,16 +19,18 @@ public class WebSocketAuthChannelInterceptorAdapter implements ChannelIntercepto
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 		StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-		if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-			String token = accessor.getFirstNativeHeader("Authorization");
-			if (token != null) {
-				String username = JwtProvider.getEmailFromJwtToken(token);
-				String roles = JwtProvider.getRolesFromJwt(token);
-				Principal userPrincipal = new UsernamePasswordAuthenticationToken(username, null,
-						List.of(new SimpleGrantedAuthority(roles)));
-				accessor.setUser(userPrincipal);
-				System.out.println("✅ WebSocket connected with empId: " + username);
+		if (accessor != null) {
+			if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+				String token = accessor.getFirstNativeHeader("Authorization");
+				if (token != null) {
+					String username = JwtProvider.getEmailFromJwtToken(token);
+					String roles = JwtProvider.getRolesFromJwt(token);
+					Principal userPrincipal = new UsernamePasswordAuthenticationToken(username, null,
+							List.of(new SimpleGrantedAuthority(roles)));
+					accessor.setUser(userPrincipal);
+					System.out.println("✅ WebSocket connected with empId: " + username);
 
+				}
 			}
 		}
 		return message;
