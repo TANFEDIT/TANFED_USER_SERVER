@@ -67,7 +67,8 @@ public class UserController {
 			if (isUserExist != null) {
 				throw new Exception("EmpId already Exists!");
 			}
-			String rawPassword = user.getPassword();
+			// String rawPassword = user.getPassword();
+			String rawPassword = "Pass@123";
 			user.setPassword(passwordEncoder.encode(rawPassword));
 			userRepository.save(user);
 
