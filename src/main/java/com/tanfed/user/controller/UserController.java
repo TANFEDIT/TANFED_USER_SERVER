@@ -3,8 +3,8 @@ package com.tanfed.user.controller;
 import java.io.IOException;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import com.tanfed.user.entity.User;
 import com.tanfed.user.repo.UserRepository;
 import com.tanfed.user.request.PasswordData;
 import com.tanfed.user.response.UserRegResponseData;
-import com.tanfed.user.service.MailService;
+// import com.tanfed.user.service.MailService;
 import com.tanfed.user.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,8 +41,8 @@ public class UserController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private MailService mailService;
+	// @Autowired
+	// private MailService mailService;
 
 	@GetMapping("/fetchuser")
 	public ResponseEntity<User> fetchUserHandler(@RequestHeader("Authorization") String jwt) {
@@ -57,7 +57,7 @@ public class UserController {
 		return userService.fetchDataForUserForm(jwt);
 	}
 
-	private Logger logger = LoggerFactory.getLogger(UserController.class);
+	// private Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	@PostMapping("/adduser")
 	@PreAuthorize("hasAnyRole('ROLE_SUPERADMIN','ROLE_ESTUSER', 'ROLE_ESTADMIN', 'ROLE_ROADMIN')")
@@ -71,9 +71,9 @@ public class UserController {
 			user.setPassword(passwordEncoder.encode(rawPassword));
 			userRepository.save(user);
 
-			mailService.sendmailPassword(user.getEmailId(), rawPassword, user.getEmpId());
-			logger.info("email{}", user.getEmailId());
-			return new ResponseEntity<String>("User Registered Successfully \nPassword sent to registered email",
+			// mailService.sendmailPassword(user.getEmailId(), rawPassword, user.getEmpId());
+			// logger.info("email{}", user.getEmailId());
+			return new ResponseEntity<String>("User Registered Successfully",
 					HttpStatus.CREATED);
 		} catch (Exception e) {
 			throw new Exception("User Registration failed!" + e);

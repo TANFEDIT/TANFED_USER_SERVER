@@ -31,9 +31,9 @@ import com.tanfed.user.repo.*;
 import com.tanfed.user.request.LoginRequest;
 import com.tanfed.user.response.AuthResponse;
 import com.tanfed.user.service.CustomUserServiceImplementation;
-import com.tanfed.user.service.MailService;
+// import com.tanfed.user.service.MailService;
 import com.tanfed.user.service.UserService;
-import com.tanfed.user.utils.MailBody;
+// import com.tanfed.user.utils.MailBody;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,8 +52,8 @@ public class AuthController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private MailService mailService;
+	// @Autowired
+	// private MailService mailService;
 
 	@Autowired
 	private OtpRepo otpRepo;
@@ -161,14 +161,14 @@ public class AuthController {
 
 			otpRepo.save(otpEntity);
 
-			MailBody body = MailBody.builder().to(user.getEmailId()).subject("OTP Verification")
-					.text(user.getEmpName() + "Your OTP is" + otp).build();
-			ResponseEntity<String> sendMail = mailService.sendMail(body);
-			if (sendMail.getStatusCode().equals(HttpStatus.OK)) {
+			// MailBody body = MailBody.builder().to(user.getEmailId()).subject("OTP Verification")
+					// .text(user.getEmpName() + "Your OTP is" + otp).build();
+			// ResponseEntity<String> sendMail = mailService.sendMail(body);
+			// if (sendMail.getStatusCode().equals(HttpStatus.OK)) {
 				return new ResponseEntity<String>("mail sent Successfully", HttpStatus.OK);
-			} else {
-				return new ResponseEntity<String>("Mail did not sent", HttpStatus.EXPECTATION_FAILED);
-			}
+			// } else {
+				// return new ResponseEntity<String>("Mail did not sent", HttpStatus.EXPECTATION_FAILED);
+			// }
 		} catch (Exception e) {
 			throw new Exception("Mail did not sent" + e);
 		}
