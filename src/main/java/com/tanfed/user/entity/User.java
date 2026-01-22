@@ -40,6 +40,9 @@ public class User {
 	private String designation;
 	
 	@Column
+	private String gender;
+	
+	@Column
 	private LocalDate dob;
 	
 	@Column
