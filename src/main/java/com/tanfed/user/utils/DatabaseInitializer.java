@@ -36,7 +36,7 @@ public class DatabaseInitializer {
 
 		if (users.isEmpty()) {
 			String role = UserRole.SUPERADMIN.name();
-			jdbcTemplate.update(sql, "admin", "kevin", "Accountant", "2000-10-02", "2000-10-02", "2000-10-02",
+			jdbcTemplate.update(sql, "admin", "Nirmal", "Accountant", "2000-10-02", "2000-10-02", "2000-10-02",
 					"2000-10-02", "Head Office", "IT Wing", "asd123ghj", "2000-10-02", 6382649996L, 6382649996L,
 					"karthiksnk210@gmail.com", 564534312376L, "jyhvgfz7s67", encodedPassword, role,
 					"91, St.marys rd, RA Puram, mandaveli, chennai-600028",

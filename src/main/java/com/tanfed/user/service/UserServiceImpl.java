@@ -1,7 +1,8 @@
 package com.tanfed.user.service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -144,7 +145,7 @@ public class UserServiceImpl implements UserService {
 			UserLog last = byEmpId.get(byEmpId.size() - 1);
 
 			if (last.getLogoutTime() == null) {
-				last.setLogoutTime(LocalDateTime.now().toString());
+				last.setLogoutTime(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString());
 			}
 			userLogRepo.save(last);
 
