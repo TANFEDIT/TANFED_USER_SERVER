@@ -2,6 +2,7 @@ package com.tanfed.user.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,8 @@ public class SupportServiceImpl implements SupportService {
 	public ResponseEntity<String> saveIssue(String issue, String jwt) throws Exception {
 		try {
 			User user = userService.fetchUser(jwt);
-			IssueData obj = new IssueData(0L, user.getOfficeName(), user.getEmpId(), user.getEmailId(), issue,
-					"Pending", null, null);
+			IssueData obj = new IssueData(null, user.getOfficeName(), user.getEmpId(), user.getEmailId(), issue,
+					"Pending", UUID.randomUUID().toString(), LocalDate.now());
 			issueDataRepo.save(obj);
 			return new ResponseEntity<String>("Issue Saved", HttpStatus.CREATED);
 
@@ -52,10 +53,11 @@ public class SupportServiceImpl implements SupportService {
 	}
 
 	@Override
-	public List<IssueData> fetchAllIssues() throws Exception {
+	public List<IssueData> fetchAllIssues(String officeName) throws Exception {
 		try {
 			return issueDataRepo.findAll().stream()
-					.filter(item -> (item.getStatus().equals("Pending") || item.getStatus().equals("Inprogress")))
+					.filter(item -> item.getOfficeName().equals(officeName)
+							&& (item.getStatus().equals("Pending") || item.getStatus().equals("Inprogress")))
 					.collect(Collectors.toList());
 		} catch (Exception e) {
 			throw new Exception(e);

@@ -1,7 +1,6 @@
 package com.tanfed.user.entity;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +30,6 @@ public class IssueData {
 	private String status;
 	
 	@Column(unique = true)
-	private String issueId = UUID.randomUUID().toString();
-	private LocalDate date = LocalDate.now();
+	private String issueId;
+	private LocalDate date;
 }

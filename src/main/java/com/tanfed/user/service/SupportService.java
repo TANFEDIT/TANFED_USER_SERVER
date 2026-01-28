@@ -12,7 +12,7 @@ public interface SupportService {
 	
 	public List<IssueData> fetchIssuesByEmpId(String jwt) throws Exception;
 
-	public List<IssueData> fetchAllIssues() throws Exception;
+	public List<IssueData> fetchAllIssues(String officeName) throws Exception;
 	
 	public ResponseEntity<String> updateIssue(String issueId, String status) throws Exception;
 }
