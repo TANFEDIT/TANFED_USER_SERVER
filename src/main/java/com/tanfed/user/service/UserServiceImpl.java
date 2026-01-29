@@ -115,14 +115,14 @@ public class UserServiceImpl implements UserService {
 			if (userData == null) {
 				throw new UsernameNotFoundException("User not found with empId :" + empId);
 			} else {
-				if(img == null) {
+				if (img == null) {
 					throw new NullPointerException("Image data is null");
 				} else {
 					userData.setImgName(img.getOriginalFilename());
 					userData.setImgType(img.getContentType());
 					userData.setImgData(img.getBytes());
-					
-					userRepository.save(userData);					
+
+					userRepository.save(userData);
 				}
 
 				return new ResponseEntity<String>("Profile Ing uploaded", HttpStatus.ACCEPTED);
@@ -203,7 +203,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<User> fetchUsers(String officeName) throws Exception {
 		try {
-			return userRepository.findByOfficeName(officeName);
+			return userRepository.findByOfficeName(officeName).stream()
+					.filter(i -> !i.getDepartment().equals("IT Wing")).collect(Collectors.toList());
 		} catch (Exception e) {
 			throw new Exception(e);
 		}
