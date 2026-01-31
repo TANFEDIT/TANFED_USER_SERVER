@@ -132,7 +132,7 @@ public class AuthController {
 				if (sessionManager.getSessionId() != null && !sessionManager.getSessionId().equals(sessionId)) {
 					messagingTemplate.convertAndSendToUser(request.getEmpId(), "/queue/force-logout", "logout");
 					System.out.println("✅ Message sent to : " + request.getEmpId());
-//					signoutWithoutJwt(request.getEmpId());
+					signoutWithoutJwt(request.getEmpId());
 				}
 			}
 			sessionManagerRepo.save(new SessionManager(null, request.getEmpId(), sessionId, jwtToken, expiryFromJwt));
@@ -217,30 +217,30 @@ public class AuthController {
 		}
 	}
 
-//	@PostMapping("/signoutwithoutjwt/{empId}")
-//	public ResponseEntity<String> signoutWithoutJwt(@PathVariable String empId) throws Exception {
-//		try {
-//			SessionManager sessionData = sessionManagerRepo.findByEmpId(empId).get();
-//			logger.info("signoutwithoutjwt{}", sessionData.getJwt());
-//			if (sessionData.getExpiryDate().isBefore(LocalDateTime.now())) {
-//				sessionManagerRepo.deleteById(sessionData.getId());
-//				List<UserLog> byEmpId = userLogRepo.findByEmpId(empId);
-//				UserLog last = byEmpId.get(byEmpId.size() - 1);
-//
-//				if (last.getLogoutTime() == null) {
-//					last.setLogoutTime(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString());
-//				}
-//				userLogRepo.save(last);
-//				SecurityContextHolder.clearContext();
-//				return new ResponseEntity<String>("Logged Out!", HttpStatus.OK);
-//			} else {
-//				return userService.saveUserSessionLog("Bearer " + sessionData.getJwt());
-//			}
-//
-//		} catch (Exception e) {
-//			throw new Exception(e);
-//		}
-//	}
+	@PostMapping("/signoutwithoutjwt/{empId}")
+	public ResponseEntity<String> signoutWithoutJwt(@PathVariable String empId) throws Exception {
+		try {
+			SessionManager sessionData = sessionManagerRepo.findByEmpId(empId).get();
+			logger.info("signoutwithoutjwt{}", sessionData.getJwt());
+			if (sessionData.getExpiryDate().isBefore(LocalDateTime.now())) {
+				sessionManagerRepo.deleteById(sessionData.getId());
+				List<UserLog> byEmpId = userLogRepo.findByEmpId(empId);
+				UserLog last = byEmpId.get(byEmpId.size() - 1);
+
+				if (last.getLogoutTime() == null) {
+					last.setLogoutTime(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString());
+				}
+				userLogRepo.save(last);
+				SecurityContextHolder.clearContext();
+				return new ResponseEntity<String>("Logged Out!", HttpStatus.OK);
+			} else {
+				return userService.saveUserSessionLog("Bearer " + sessionData.getJwt());
+			}
+
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
+	}
 
 	private Authentication authenticate(String empId, String password) {
 		UserDetails userDetails = customUserServiceImplementation.loadUserByUsername(empId);

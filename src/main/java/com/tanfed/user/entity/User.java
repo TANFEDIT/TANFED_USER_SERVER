@@ -33,46 +33,23 @@ public class User {
 	@Column(unique = true)
 	private String empId;
 	
-	@Column
 	private String empName;
-	
-	@Column
+	private String natureOfEmployment;
 	private String designation;
-	
-	@Column
 	private String gender;
-	
-	@Column
 	private LocalDate dob;
-	
-	@Column
 	private LocalDate doj;
-	
-	@Column
+	private LocalDate deputationjoinDate;
 	private LocalDate joiningDate;
-	
-	@Column
 	private LocalDate dor;
-	
-	@Column
 	private String officeName;
-	
-	@Column
 	private String department;
-	
-	@Column
 	private String rcNo;
-	
-	@Column
-	private LocalDate date;
-	
-	@Column
+	private LocalDate rcDate;
+	private String goNo;
+	private LocalDate goDate;
 	private Long mobileNo1; 
-	
-	@Column
 	private Long mobileNo2;
-	
-	@Column
 	private String emailId;
 	
 	@Column(name="aadhar_no", unique = true)
@@ -81,28 +58,21 @@ public class User {
 	@Column(unique = true)
 	private String panNo;
 	
-	@Column
 	private String password;
 	
 	@Convert(converter = UserRoleConverter.class)
 	private List<UserRole> role;
 	
-	@Column
 	private String currentAddress;
 	
-	@Column
 	private String permanentAddress;
 	
-	@Column
 	private String state;
 
-	@Column
 	private Boolean sameAsChecked;
 	
-	@Column
 	private String imgName;
 	
-	@Column
 	private String imgType;
 	
 	@Lob
