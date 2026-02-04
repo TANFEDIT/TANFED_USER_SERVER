@@ -78,10 +78,10 @@ public class UserServiceImpl implements UserService {
 
 			User fetchedUser = fetchUser(jwt);
 
-			data.setRoleLst(getRoleList(fetchedUser.getRole()));
-			data.setDeptLst(deptLst);
-			data.setDesignationLst(designationLst);
-			data.setOfficeNameLst(
+			data.setRoleList(getRoleList(fetchedUser.getRole()));
+			data.setDeptList(deptLst);
+			data.setDesignationList(designationLst);
+			data.setOfficeNameList(
 					officeRepo.findAll().stream().map(Office::getOfficeName).collect(Collectors.toList()));
 
 			return data;
@@ -211,14 +211,14 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt)
-			throws Exception {
+	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt,
+			String natureOfEmployment) throws Exception {
 		UserTransfer_PromotionModel res = new UserTransfer_PromotionModel();
 		List<Designation> designation = designationRepo.findAll();
 		List<Office> office = officeRepo.findAll();
 		User fetchedUser = fetchUser(jwt);
-		res.setRoleLst(getRoleList(fetchedUser.getRole()));
-		res.setDeptLst(
+		res.setRoleList(getRoleList(fetchedUser.getRole()));
+		res.setDeptList(
 				designation.stream().filter(i -> !i.getDepartment().equals("") && !i.getDepartment().equals("none"))
 						.map(i -> i.getDepartment()).collect(Collectors.toSet()));
 		res.setOfficeList(office.stream().map(i -> i.getOfficeName()).collect(Collectors.toList()));
@@ -227,7 +227,8 @@ public class UserServiceImpl implements UserService {
 			if (empId != null && !empId.isEmpty()) {
 				res.setUser(userRepository.findByEmpId(empId));
 				res.setUserTransferData(
-						userTransferRepo.findByEmpId(empId).stream().reduce((first, second) -> second).orElse(null));
+						userTransferRepo.findByEmpId(empId).stream().filter(i -> i.getTransferType().equals("transfer"))
+								.reduce((first, second) -> second).orElse(null));
 			}
 		}
 		return res;

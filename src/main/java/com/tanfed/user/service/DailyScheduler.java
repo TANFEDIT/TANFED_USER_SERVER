@@ -3,6 +3,7 @@ package com.tanfed.user.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class DailyScheduler {
 	@Autowired
 	private UserTransferRepo userTransferRepo;
 
-	@Scheduled(cron = "0 0 1 * * ?", zone = "Asia/Kolkata")
+	@Scheduled(cron = "0 0 23 * * ?", zone = "Asia/Kolkata")
 	public void dailyJob() {
 		if (users.isEmpty()) {
 			users.addAll(userRepository.findAll());
@@ -36,14 +37,17 @@ public class DailyScheduler {
 	public void validateAndUpdateUserAccess() {
 		List<UserTransferData> userList = userTransferRepo.findAll();
 		UpdatePromotionData(
-				userList.stream().filter(i -> i.getTransferType().equals("Promotion")).collect(Collectors.toList()));
+				userList.stream().filter(i -> i.getTransferType().equals("promotion")).collect(Collectors.toList()));
 		updateTransferData(
-				userList.stream().filter(i -> i.getTransferType().equals("Transfer")).collect(Collectors.toList()));
+				userList.stream().filter(i -> i.getTransferType().equals("transfer")).collect(Collectors.toList()));
+		updateInchargeAndAdditionalChargeData(userList.stream()
+				.filter(i -> (i.getTransferType().equals("inCharge") || i.getTransferType().equals("additionalCharge")))
+				.collect(Collectors.toList()));
 	}
 
 	public void UpdatePromotionData(List<UserTransferData> userList) {
 		for (var i : userList) {
-			if (i.getTransferType().equals("Promotion") && i.getJoiningDate().isEqual(LocalDate.now())) {
+			if (i.getJoiningDate().isEqual(LocalDate.now())) {
 				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
 						.get(0);
 				user.setDepartment(i.getNewDepartment());
@@ -56,7 +60,54 @@ public class DailyScheduler {
 	}
 
 	public void updateTransferData(List<UserTransferData> userList) {
-		
+		Map<String, UserTransferData> userMap = userList.stream()
+				.collect(Collectors.toMap(UserTransferData::getEmpId, u -> u, (oldVal, newVal) -> newVal));
+
+		List<UserTransferData> userListFinal = new ArrayList<>(userMap.values());
+
+		for (var i : userListFinal) {
+			if (i.getRelievedDate() != null && i.getJoiningDate() == null
+					&& i.getRelievedDate().isEqual(LocalDate.now())) {
+				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+						.get(0);
+				user.setIsBlocked(true);
+				userRepository.save(user);
+			}
+			if (i.getRelievedDate() == null && i.getJoiningDate() != null
+					&& i.getJoiningDate().isEqual(LocalDate.now())) {
+				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+						.get(0);
+				user.setDepartment(i.getNewDepartment());
+				user.setDesignation(i.getNewDesignation());
+				user.setOfficeName(i.getNewOfficeName());
+				user.setRole(i.getNewRole());
+				userRepository.save(user);
+			}
+		}
+	}
+
+	public void updateInchargeAndAdditionalChargeData(List<UserTransferData> userList) {
+		for (var i : userList) {
+			if (i.getFromDate() != null && i.getFromDate().isEqual(LocalDate.now())) {
+				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+						.get(0);
+				user.setDepartment(user.getDepartment() + ", " + i.getNewDepartment());
+				user.setOfficeName(i.getTransferType().equals("additionalCharge")
+						? user.getOfficeName() + ", " + i.getNewOfficeName()
+						: user.getOfficeName());
+				user.getRole().addAll(i.getNewRole());
+				userRepository.save(user);
+			}
+			if (i.getToDate() != null && i.getToDate().isEqual(LocalDate.now())) {
+				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+						.get(0);
+				user.setDepartment(i.getCurrentDepartment());
+				user.setOfficeName(i.getTransferType().equals("additionalCharge") ? i.getCurrentOfficeName()
+						: user.getOfficeName());
+				user.setRole(i.getCurrentRole());
+				userRepository.save(user);
+			}
+		}
 	}
 
 }

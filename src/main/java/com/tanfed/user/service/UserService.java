@@ -19,7 +19,7 @@ public interface UserService {
 	public User fetchUser(String jwt);
 	public UserRegResponseData fetchDataForUserForm(String jwt) throws Exception;
 	public List<User> fetchUsers(String officeName) throws Exception;
-	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt) throws Exception;
+	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt, String natureOfEmployment) throws Exception;
 	
 //	POST METHODS
 	public ResponseEntity<String> saveUserImage(String empId, MultipartFile img) throws IOException;

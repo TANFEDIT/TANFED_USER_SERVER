@@ -118,9 +118,9 @@ public class UserController {
 	}
 
 	@GetMapping("/getdatafortransfer")
-	public UserTransfer_PromotionModel fetchTransferAndPromotionDataHandler(@RequestParam String officeName,
+	public UserTransfer_PromotionModel fetchTransferAndPromotionDataHandler(@RequestParam String officeName,@RequestParam String natureOfEmployment,
 			@RequestParam String empId, @RequestHeader("Authorization") String jwt) throws Exception {
-		return userService.fetchTransferAndPromotionData(officeName, empId, jwt);
+		return userService.fetchTransferAndPromotionData(officeName, empId, jwt, natureOfEmployment);
 	}
 	
 	@PostMapping("/savetransferdata")

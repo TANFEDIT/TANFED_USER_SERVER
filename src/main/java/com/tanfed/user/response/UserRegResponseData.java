@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserRegResponseData {
 
-	private Set<String> deptLst;
-	private Set<String> designationLst;
-	private List<String> officeNameLst;
-	private List<UserRole> roleLst;
+	private Set<String> deptList;
+	private Set<String> designationList;
+	private List<String> officeNameList;
+	private List<UserRole> roleList;
 }

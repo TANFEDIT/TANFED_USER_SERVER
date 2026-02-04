@@ -20,6 +20,6 @@ public class UserTransfer_PromotionModel {
 	private List<String> empIdList;
 	private User user;
 	private UserTransferData userTransferData;
-	private Set<String> deptLst;
-	private List<UserRole> roleLst;
+	private Set<String> deptList;
+	private List<UserRole> roleList;
 }
