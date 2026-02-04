@@ -1,6 +1,7 @@
 package com.tanfed.user.dto;
 
 import java.util.List;
+import java.util.Set;
 
 import com.tanfed.user.entity.IssueData;
 
@@ -14,6 +15,6 @@ import lombok.NoArgsConstructor;
 
 public class SupportDataSuperadminDto {
 
-	private List<String> officeList;
+	private Set<String> officeList;
 	private List<IssueData> tickets;
 }

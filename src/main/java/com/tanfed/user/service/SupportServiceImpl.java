@@ -34,7 +34,7 @@ public class SupportServiceImpl implements SupportService {
 		try {
 			User user = userService.fetchUser(jwt);
 			IssueData obj = new IssueData(null, user.getOfficeName(), user.getEmpId(), user.getEmailId(), issue,
-					"Pending", null, UUID.randomUUID().toString(), LocalDate.now());
+					"Pending", null, UUID.randomUUID().toString(), LocalDate.now(), null);
 			issueDataRepo.save(obj);
 			return new ResponseEntity<String>("Issue Saved", HttpStatus.CREATED);
 
@@ -50,7 +50,7 @@ public class SupportServiceImpl implements SupportService {
 			return issueDataRepo.findByEmpId(empId).stream()
 					.filter(item -> (item.getStatus().equals("Pending") || item.getStatus().equals("In Progress"))
 							|| (item.getStatus().equals("Solved")
-									&& item.getDate().isAfter(LocalDate.now().minusDays(2))))
+									&& item.getSolvedDate().isAfter(LocalDate.now().minusDays(2))))
 					.collect(Collectors.toList());
 		} catch (Exception e) {
 			throw new Exception(e);
@@ -64,7 +64,7 @@ public class SupportServiceImpl implements SupportService {
 			List<IssueData> ticketList = issueDataRepo.findAll();
 			res.setOfficeList(ticketList.stream()
 					.filter(item -> (item.getStatus().equals("Pending") || item.getStatus().equals("In Progress")))
-					.map(i -> i.getOfficeName()).collect(Collectors.toList()));
+					.map(i -> i.getOfficeName()).collect(Collectors.toSet()));
 			res.setTickets(ticketList.stream()
 					.filter(item -> item.getOfficeName().equals(officeName)
 							&& (item.getStatus().equals("Pending") || item.getStatus().equals("In Progress")))
@@ -82,6 +82,7 @@ public class SupportServiceImpl implements SupportService {
 			logger.info(issueId);
 			IssueData issueData = issueDataRepo.findByissueId(issueId);
 			issueData.setStatus(status);
+			issueData.setSolvedDate(status.equals("Solved") ? LocalDate.now() : null);
 			issueDataRepo.save(issueData);
 			return new ResponseEntity<String>("Status updated Successfully", HttpStatus.ACCEPTED);
 		} catch (Exception e) {

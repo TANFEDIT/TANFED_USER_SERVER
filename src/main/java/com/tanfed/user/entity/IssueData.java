@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
 @Data
 @Table
 public class IssueData {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	private String officeName;
 	private String empId;
 	private String email;
@@ -32,4 +32,5 @@ public class IssueData {
 	@Column(unique = true)
 	private String issueId;
 	private LocalDate date;
+	private LocalDate solvedDate;
 }
