@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tanfed.user.config.JwtProvider;
 import com.tanfed.user.config.JwtTokenValidator;
+import com.tanfed.user.dto.UserTransfer_PromotionModel;
 import com.tanfed.user.entity.*;
 import com.tanfed.user.repo.*;
 import com.tanfed.user.request.PasswordData;
@@ -89,20 +90,16 @@ public class UserServiceImpl implements UserService {
 
 	private List<UserRole> getRoleList(List<UserRole> roles) {
 		List<UserRole> data = new ArrayList<>(List.of(UserRole.values()));
-		if (roles.size() == 1) {
-			if (roles.get(0).equals(UserRole.SUPERADMIN)) {
-				return data;
-			} else if (roles.get(0).equals(UserRole.ROADMIN)) {
-				return data.stream().filter(item -> {
-					return item.equals(UserRole.ROUSER);
-				}).collect(Collectors.toList());
-			} else if (roles.get(0).equals(UserRole.ESTADMIN)) {
-				return data.stream().filter(item -> {
-					return !item.equals(UserRole.SUPERADMIN);
-				}).collect(Collectors.toList());
-			} else {
-				return null;
-			}
+		if (roles.contains(UserRole.SUPERADMIN)) {
+			return data;
+		} else if (roles.contains(UserRole.ROADMIN)) {
+			return data.stream().filter(item -> {
+				return item.equals(UserRole.ROUSER);
+			}).collect(Collectors.toList());
+		} else if (roles.contains(UserRole.ESTADMIN) || roles.contains(UserRole.ESTUSER)) {
+			return data.stream().filter(item -> {
+				return !item.equals(UserRole.SUPERADMIN);
+			}).collect(Collectors.toList());
 		} else {
 			return null;
 		}
@@ -208,6 +205,27 @@ public class UserServiceImpl implements UserService {
 		} catch (Exception e) {
 			throw new Exception(e);
 		}
+	}
+
+	@Override
+	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt) throws Exception {
+		UserTransfer_PromotionModel res = new UserTransfer_PromotionModel();
+		List<Designation> designation = designationRepo.findAll();
+		List<Office> office = officeRepo.findAll();
+		User fetchedUser = fetchUser(jwt);
+		res.setRoleLst(getRoleList(fetchedUser.getRole()));
+		res.setDeptLst(
+				designation.stream().filter(i -> !i.getDepartment().equals("") && !i.getDepartment().equals("none"))
+						.map(i -> i.getDepartment()).collect(Collectors.toSet()));
+		res.setOfficeList(office.stream().map(i -> i.getOfficeName()).collect(Collectors.toList()));
+		if (officeName != null && !officeName.isEmpty()) {
+			res.setEmpIdList(fetchUsers(officeName).stream().map(i -> i.getEmpId()).collect(Collectors.toList()));
+			if (empId != null && !empId.isEmpty()) {
+				res.setUser(userRepository.findByEmpId(empId));
+			}
+		}
+
+		return res;
 	}
 
 }

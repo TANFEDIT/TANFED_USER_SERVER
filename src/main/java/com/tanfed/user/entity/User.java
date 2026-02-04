@@ -72,7 +72,7 @@ public class User {
 	private Boolean sameAsChecked;
 	
 	private String imgName;
-	
+	private Boolean isBlocked;
 	private String imgType;
 	
 	@Lob

@@ -28,7 +28,7 @@ public class IssueData {
 	private String email;
 	private String issue;
 	private String status;
-	
+	private String response;
 	@Column(unique = true)
 	private String issueId;
 	private LocalDate date;

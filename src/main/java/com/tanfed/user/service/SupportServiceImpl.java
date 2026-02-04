@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.tanfed.user.config.JwtProvider;
 import com.tanfed.user.controller.SupportHandler;
+import com.tanfed.user.dto.SupportDataSuperadminDto;
 import com.tanfed.user.entity.IssueData;
 import com.tanfed.user.entity.User;
 import com.tanfed.user.repo.IssueDataRepo;
@@ -27,12 +28,13 @@ public class SupportServiceImpl implements SupportService {
 	@Autowired
 	private IssueDataRepo issueDataRepo;
 	private static Logger logger = LoggerFactory.getLogger(SupportHandler.class);
+
 	@Override
 	public ResponseEntity<String> saveIssue(String issue, String jwt) throws Exception {
 		try {
 			User user = userService.fetchUser(jwt);
 			IssueData obj = new IssueData(null, user.getOfficeName(), user.getEmpId(), user.getEmailId(), issue,
-					"Pending", UUID.randomUUID().toString(), LocalDate.now());
+					"Pending", null, UUID.randomUUID().toString(), LocalDate.now());
 			issueDataRepo.save(obj);
 			return new ResponseEntity<String>("Issue Saved", HttpStatus.CREATED);
 
@@ -56,12 +58,18 @@ public class SupportServiceImpl implements SupportService {
 	}
 
 	@Override
-	public List<IssueData> fetchAllIssues(String officeName) throws Exception {
+	public SupportDataSuperadminDto fetchAllIssues(String officeName) throws Exception {
 		try {
-			return issueDataRepo.findAll().stream()
+			SupportDataSuperadminDto res = new SupportDataSuperadminDto();
+			List<IssueData> ticketList = issueDataRepo.findAll();
+			res.setOfficeList(ticketList.stream()
+					.filter(item -> (item.getStatus().equals("Pending") || item.getStatus().equals("In Progress")))
+					.map(i -> i.getOfficeName()).collect(Collectors.toList()));
+			res.setTickets(ticketList.stream()
 					.filter(item -> item.getOfficeName().equals(officeName)
 							&& (item.getStatus().equals("Pending") || item.getStatus().equals("In Progress")))
-					.collect(Collectors.toList());
+					.collect(Collectors.toList()));
+			return res;
 		} catch (Exception e) {
 			throw new Exception(e);
 		}
@@ -74,6 +82,19 @@ public class SupportServiceImpl implements SupportService {
 			logger.info(issueId);
 			IssueData issueData = issueDataRepo.findByissueId(issueId);
 			issueData.setStatus(status);
+			issueDataRepo.save(issueData);
+			return new ResponseEntity<String>("Status updated Successfully", HttpStatus.ACCEPTED);
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
+	}
+
+	@Override
+	public ResponseEntity<String> updateIssueResponse(String issueId, String res) throws Exception {
+		try {
+			logger.info(issueId);
+			IssueData issueData = issueDataRepo.findByissueId(issueId);
+			issueData.setResponse(res);
 			issueDataRepo.save(issueData);
 			return new ResponseEntity<String>("Status updated Successfully", HttpStatus.ACCEPTED);
 		} catch (Exception e) {

@@ -63,19 +63,17 @@ public class UserController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPERADMIN','ROLE_ESTUSER', 'ROLE_ESTADMIN', 'ROLE_ROADMIN')")
 	public ResponseEntity<String> createUserHandler(@RequestBody User user) throws Exception {
 		try {
-			User isUserExist = userRepository.findByEmpId(user.getEmpId());
-			if (isUserExist != null) {
-				throw new Exception("EmpId already Exists!");
-			}
+
 			// String rawPassword = user.getPassword();
 			String rawPassword = "Pass@123";
 			user.setPassword(passwordEncoder.encode(rawPassword));
+			user.setIsBlocked(false);
 			userRepository.save(user);
 
-			// mailService.sendmailPassword(user.getEmailId(), rawPassword, user.getEmpId());
+			// mailService.sendmailPassword(user.getEmailId(), rawPassword,
+			// user.getEmpId());
 			// logger.info("email{}", user.getEmailId());
-			return new ResponseEntity<String>("User Registered Successfully",
-					HttpStatus.CREATED);
+			return new ResponseEntity<String>("User Registered Successfully", HttpStatus.CREATED);
 		} catch (Exception e) {
 			throw new Exception("User Registration failed!" + e);
 		}
@@ -102,10 +100,19 @@ public class UserController {
 	public ResponseEntity<String> updatePasswordHandler(@RequestBody PasswordData obj) throws Exception {
 		return userService.updatePassword(obj);
 	}
-	
+
 	@GetMapping("/getusersbyoffice")
 	public List<User> fetchUsers(@RequestParam String officeName) throws Exception {
 		return userService.fetchUsers(officeName);
 	}
-	
+
+	@GetMapping("/validateempid/{empId}")
+	public String validateEmpID(@PathVariable String empId) {
+		User isUserExist = userRepository.findByEmpId(empId);
+		if (isUserExist != null) {
+			return new String("EmpId already Exists!");
+		}
+		return new String("");
+	}
+
 }

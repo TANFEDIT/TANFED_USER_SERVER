@@ -23,7 +23,7 @@ public class CustomUserServiceImplementation implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		User user = userRepository.findByEmpId(username);
-		if (user == null) {
+		if (user == null || user.getIsBlocked()) {
 			throw new UsernameNotFoundException("User not found with empId :" + username);
 		}
 

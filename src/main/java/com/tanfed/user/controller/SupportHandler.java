@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tanfed.user.dto.SupportDataSuperadminDto;
 import com.tanfed.user.entity.IssueData;
 import com.tanfed.user.service.SupportService;
 
@@ -26,6 +27,7 @@ public class SupportHandler {
 	@Autowired
 	private SupportService supportService;
 	private static Logger logger = LoggerFactory.getLogger(SupportHandler.class);
+
 	@PostMapping("/saveissue/{issue}")
 	public ResponseEntity<String> saveIssueHandler(@PathVariable String issue,
 			@RequestHeader("Authorization") String jwt) throws Exception {
@@ -39,7 +41,7 @@ public class SupportHandler {
 	}
 
 	@GetMapping("/fetchallissues")
-	public List<IssueData> fetchAllIssuesHandler(@RequestParam String officeName) throws Exception {
+	public SupportDataSuperadminDto fetchAllIssuesHandler(@RequestParam String officeName) throws Exception {
 		return supportService.fetchAllIssues(officeName);
 	}
 
@@ -47,6 +49,12 @@ public class SupportHandler {
 	public ResponseEntity<String> updateIssueHandler(@PathVariable String issueId, @PathVariable String status)
 			throws Exception {
 		return supportService.updateIssue(issueId, status);
+	}
+
+	@PutMapping("/updateissueresponse/{issueId}/{res}")
+	public ResponseEntity<String> updateIssueResponseHandler(@PathVariable String issueId, @PathVariable String res)
+			throws Exception {
+		return supportService.updateIssueResponse(issueId, res);
 	}
 
 }
