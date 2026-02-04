@@ -48,6 +48,9 @@ public class UserServiceImpl implements UserService {
 	private OfficeRepo officeRepo;
 
 	@Autowired
+	private UserTransferRepo userTransferRepo;
+
+	@Autowired
 	private SessionManagerRepo sessionManagerRepo;
 
 	@Override
@@ -208,7 +211,8 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt) throws Exception {
+	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt)
+			throws Exception {
 		UserTransfer_PromotionModel res = new UserTransfer_PromotionModel();
 		List<Designation> designation = designationRepo.findAll();
 		List<Office> office = officeRepo.findAll();
@@ -222,10 +226,21 @@ public class UserServiceImpl implements UserService {
 			res.setEmpIdList(fetchUsers(officeName).stream().map(i -> i.getEmpId()).collect(Collectors.toList()));
 			if (empId != null && !empId.isEmpty()) {
 				res.setUser(userRepository.findByEmpId(empId));
+				res.setUserTransferData(
+						userTransferRepo.findByEmpId(empId).stream().reduce((first, second) -> second).orElse(null));
 			}
 		}
-
 		return res;
+	}
+
+	@Override
+	public ResponseEntity<String> saveUserTransferData(UserTransferData obj) throws Exception {
+		try {
+			userTransferRepo.save(obj);
+			return new ResponseEntity<String>("User updated Successfully", HttpStatus.ACCEPTED);
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
 	}
 
 }

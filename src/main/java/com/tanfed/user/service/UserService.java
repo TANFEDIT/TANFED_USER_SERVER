@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tanfed.user.dto.UserTransfer_PromotionModel;
 import com.tanfed.user.entity.User;
+import com.tanfed.user.entity.UserTransferData;
 import com.tanfed.user.request.PasswordData;
 import com.tanfed.user.response.UserRegResponseData;
 
@@ -23,6 +24,7 @@ public interface UserService {
 //	POST METHODS
 	public ResponseEntity<String> saveUserImage(String empId, MultipartFile img) throws IOException;
 	public ResponseEntity<String> saveUserSessionLog(String jwt) throws Exception;
+	public ResponseEntity<String> saveUserTransferData(UserTransferData obj) throws Exception;
 	
 //	PUT METHODS
 	public ResponseEntity<String> updateUser(User user) throws Exception;

@@ -6,7 +6,6 @@ import java.util.List;
 import com.tanfed.user.utils.UserRole;
 import com.tanfed.user.utils.UserRoleConverter;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,22 +27,36 @@ public class UserTransferData {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column
+	private String transferType;
+	
 	private String empId;
 	
-	@Column
-	private String empName;
+	private String currentDepartment;
+
+	private String currentDesignation;
 	
-	@Column
-	private String officeName;
+	private String currentOfficeName;
+
+	@Convert(converter = UserRoleConverter.class)
+	private List<UserRole> currentRole;
+	
+	private String newDepartment;
+
+	private String newDesignation;
+	
+	private String newOfficeName;
 	
 	@Convert(converter = UserRoleConverter.class)
-	private List<UserRole> role;
+	private List<UserRole> newRole;
+
+	private String reason;
 	
-	@Column
-	private LocalDate date;
+	private LocalDate rcDate;
 	
-	@Column
+	private LocalDate relievedDate;
+
+	private LocalDate joiningDate;
+	
 	private String rcNo;
 	
 }

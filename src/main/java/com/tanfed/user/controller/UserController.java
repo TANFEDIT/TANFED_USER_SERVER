@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.tanfed.user.dto.UserTransfer_PromotionModel;
 import com.tanfed.user.entity.User;
+import com.tanfed.user.entity.UserTransferData;
 import com.tanfed.user.repo.UserRepository;
 import com.tanfed.user.request.PasswordData;
 import com.tanfed.user.response.UserRegResponseData;
@@ -114,5 +116,17 @@ public class UserController {
 		}
 		return new String("");
 	}
+
+	@GetMapping("/getdatafortransfer")
+	public UserTransfer_PromotionModel fetchTransferAndPromotionDataHandler(@RequestParam String officeName,
+			@RequestParam String empId, @RequestHeader("Authorization") String jwt) throws Exception {
+		return userService.fetchTransferAndPromotionData(officeName, empId, jwt);
+	}
+	
+	@PostMapping("/savetransferdata")
+	public ResponseEntity<String> postMethodName(@RequestBody UserTransferData obj) throws Exception {
+		return userService.saveUserTransferData(obj);
+	}
+	
 
 }
