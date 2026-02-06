@@ -27,7 +27,7 @@ public class UserTransferData {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private String transferType;
+	private String personnelType;
 
 	private String empId;
 

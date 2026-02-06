@@ -227,7 +227,7 @@ public class UserServiceImpl implements UserService {
 			if (empId != null && !empId.isEmpty()) {
 				res.setUser(userRepository.findByEmpId(empId));
 				res.setUserTransferData(
-						userTransferRepo.findByEmpId(empId).stream().filter(i -> i.getTransferType().equals("transfer"))
+						userTransferRepo.findByEmpId(empId).stream().filter(i -> i.getPersonnelType().equals("transfer"))
 								.reduce((first, second) -> second).orElse(null));
 			}
 		}
@@ -237,6 +237,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ResponseEntity<String> saveUserTransferData(UserTransferData obj) throws Exception {
 		try {
+			if(obj.getRelievedDate() != null) {
+				User user = userRepository.findByEmpId(obj.getEmpId());
+				obj.setCurrentDepartment(user.getDepartment());
+				obj.setCurrentDesignation(user.getDesignation());
+				obj.setCurrentOfficeName(user.getOfficeName());
+				obj.setCurrentRole(user.getRole());
+			}
 			userTransferRepo.save(obj);
 			return new ResponseEntity<String>("User updated Successfully", HttpStatus.ACCEPTED);
 		} catch (Exception e) {

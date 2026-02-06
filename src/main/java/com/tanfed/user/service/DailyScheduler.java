@@ -10,8 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.tanfed.user.entity.SessionManager;
 import com.tanfed.user.entity.User;
+import com.tanfed.user.entity.UserLog;
 import com.tanfed.user.entity.UserTransferData;
+import com.tanfed.user.repo.SessionManagerRepo;
+import com.tanfed.user.repo.UserLogRepo;
 import com.tanfed.user.repo.UserRepository;
 import com.tanfed.user.repo.UserTransferRepo;
 
@@ -26,6 +30,26 @@ public class DailyScheduler {
 	@Autowired
 	private UserTransferRepo userTransferRepo;
 
+	@Autowired
+	private UserLogRepo userLogRepo;
+
+	@Autowired
+	private SessionManagerRepo sessionManagerRepo;
+
+	@Scheduled(cron = "0 0 1 * * ?", zone = "Asia/Kolkata")
+	public void forceLogout() {
+		List<SessionManager> activeUsers = sessionManagerRepo.findAll();
+		for (var empId : activeUsers) {
+			UserLog userLog = userLogRepo.findByEmpId(empId.getEmpId()).stream().reduce((first, second) -> second)
+					.get();
+			if (userLog.getLogoutTime() == null) {
+				userLog.setLogoutTime(LocalDate.now().toString());
+			}
+			userLogRepo.save(userLog);
+		}
+		sessionManagerRepo.deleteAll();
+	}
+
 	@Scheduled(cron = "0 0 23 * * ?", zone = "Asia/Kolkata")
 	public void dailyJob() {
 		if (users.isEmpty()) {
@@ -37,11 +61,11 @@ public class DailyScheduler {
 	public void validateAndUpdateUserAccess() {
 		List<UserTransferData> userList = userTransferRepo.findAll();
 		UpdatePromotionData(
-				userList.stream().filter(i -> i.getTransferType().equals("promotion")).collect(Collectors.toList()));
+				userList.stream().filter(i -> i.getPersonnelType().equals("promotion")).collect(Collectors.toList()));
 		updateTransferData(
-				userList.stream().filter(i -> i.getTransferType().equals("transfer")).collect(Collectors.toList()));
-		updateInchargeAndAdditionalChargeData(userList.stream()
-				.filter(i -> (i.getTransferType().equals("inCharge") || i.getTransferType().equals("additionalCharge")))
+				userList.stream().filter(i -> i.getPersonnelType().equals("transfer")).collect(Collectors.toList()));
+		updateInchargeAndAdditionalChargeData(userList.stream().filter(
+				i -> (i.getPersonnelType().equals("inCharge") || i.getPersonnelType().equals("additionalCharge")))
 				.collect(Collectors.toList()));
 	}
 
@@ -92,7 +116,7 @@ public class DailyScheduler {
 				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
 						.get(0);
 				user.setDepartment(user.getDepartment() + ", " + i.getNewDepartment());
-				user.setOfficeName(i.getTransferType().equals("additionalCharge")
+				user.setOfficeName(i.getPersonnelType().equals("additionalCharge")
 						? user.getOfficeName() + ", " + i.getNewOfficeName()
 						: user.getOfficeName());
 				user.getRole().addAll(i.getNewRole());
@@ -102,7 +126,7 @@ public class DailyScheduler {
 				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
 						.get(0);
 				user.setDepartment(i.getCurrentDepartment());
-				user.setOfficeName(i.getTransferType().equals("additionalCharge") ? i.getCurrentOfficeName()
+				user.setOfficeName(i.getPersonnelType().equals("additionalCharge") ? i.getCurrentOfficeName()
 						: user.getOfficeName());
 				user.setRole(i.getCurrentRole());
 				userRepository.save(user);
