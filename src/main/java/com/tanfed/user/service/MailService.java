@@ -23,8 +23,10 @@ public class MailService {
 	public ResponseEntity<String> sendmailPassword(String to, String password, String empId) throws Exception {
 		try {
 			logger.info("sendmailPassword{}", to);
-			MailBody body = MailBody.builder().to(to).subject("Tanfed username password")
-					.text("Your EmployeeID is : " + empId + "\n Your Password is : " + password).build();
+			MailBody body = MailBody.builder().to(to).subject("Tanfed User Credentials!")
+					.text("Your EmployeeID is : " + empId + "\n Your Password is : " + password
+							+ "\nNote: Change Password after login. DO NOT SHARE PASSWORD!")
+					.build();
 
 			sendMail(body);
 			return new ResponseEntity<String>("mail sent Successfully", HttpStatus.OK);
@@ -32,7 +34,7 @@ public class MailService {
 			throw new Exception("Mail did not sent(sendmailPassword)" + e);
 		}
 	}
-	
+
 	@Autowired
 	private Environment env;
 

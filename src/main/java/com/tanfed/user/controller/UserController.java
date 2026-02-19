@@ -23,7 +23,7 @@ import com.tanfed.user.entity.UserTransferData;
 import com.tanfed.user.repo.UserRepository;
 import com.tanfed.user.request.PasswordData;
 import com.tanfed.user.response.UserRegResponseData;
-//import com.tanfed.user.service.MailService;
+import com.tanfed.user.service.MailService;
 import com.tanfed.user.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,8 +43,8 @@ public class UserController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-//	@Autowired
-//	private MailService mailService;
+	@Autowired
+	private MailService mailService;
 
 	@GetMapping("/fetchuser")
 	public ResponseEntity<User> fetchUserHandler(@RequestHeader("Authorization") String jwt) {
@@ -65,14 +65,14 @@ public class UserController {
 	public ResponseEntity<String> createUserHandler(@RequestBody User user) throws Exception {
 		try {
 
-			// String rawPassword = user.getPassword();
-			String rawPassword = "Pass@123";
+			 String rawPassword = user.getPassword();
+//			String rawPassword = "Pass@123";
 			user.setPassword(passwordEncoder.encode(rawPassword));
 			user.setIsBlocked(false);
 			userRepository.save(user);
 
-			// mailService.sendmailPassword(user.getEmailId(), rawPassword,
-			// user.getEmpId());
+			 mailService.sendmailPassword(user.getEmailId(), rawPassword,
+			 user.getEmpId());
 			// logger.info("email{}", user.getEmailId());
 			return new ResponseEntity<String>("User Registered Successfully", HttpStatus.CREATED);
 		} catch (Exception e) {

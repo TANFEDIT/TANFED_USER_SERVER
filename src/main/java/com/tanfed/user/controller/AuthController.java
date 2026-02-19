@@ -175,16 +175,14 @@ public class AuthController {
 
 			otpRepo.save(otpEntity);
 
-			// MailBody body = MailBody.builder().to(user.getEmailId()).subject("OTP
-			// Verification")
-			// .text(user.getEmpName() + "Your OTP is" + otp).build();
-			// ResponseEntity<String> sendMail = mailService.sendMail(body);
-			// if (sendMail.getStatusCode().equals(HttpStatus.OK)) {
-			return new ResponseEntity<String>("mail sent Successfully", HttpStatus.OK);
-			// } else {
-			// return new ResponseEntity<String>("Mail did not sent",
-			// HttpStatus.EXPECTATION_FAILED);
-			// }
+			MailBody body = MailBody.builder().to(user.getEmailId()).subject("OTP - Verification. DO NOT SHARE!")
+					.text(user.getEmpName() + "Your OTP is" + otp + "\n NOTE: OTP only valid for 5 minutes").build();
+			ResponseEntity<String> sendMail = mailService.sendMail(body);
+			if (sendMail.getStatusCode().equals(HttpStatus.OK)) {
+				return new ResponseEntity<String>("mail sent Successfully", HttpStatus.OK);
+			} else {
+				return new ResponseEntity<String>("Mail did not sent", HttpStatus.EXPECTATION_FAILED);
+			}
 		} catch (Exception e) {
 			throw new Exception("Mail did not sent" + e);
 		}
