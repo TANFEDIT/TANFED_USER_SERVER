@@ -15,8 +15,9 @@ public class AuthResponse {
 
 	private String empId;
 	private String name;
-	private List<UserRole> role;
+	private List<List<UserRole>> role;
 	private String officeName;
+	private List<String> additionalOfficeName;
 	private String designation;
 	private String token;
 	private String imgName;

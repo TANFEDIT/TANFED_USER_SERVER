@@ -17,7 +17,7 @@ public interface UserService {
 	
 //	GET METHODS
 	public User fetchUser(String jwt);
-	public UserRegResponseData fetchDataForUserForm(String jwt) throws Exception;
+	public UserRegResponseData fetchDataForUserForm(String jwt, String officeName, String department) throws Exception;
 	public List<User> fetchUsers(String officeName) throws Exception;
 	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt, String natureOfEmployment) throws Exception;
 	
@@ -27,6 +27,7 @@ public interface UserService {
 	public ResponseEntity<String> saveUserTransferData(UserTransferData obj) throws Exception;
 	
 //	PUT METHODS
-	public ResponseEntity<String> updateUser(User user) throws Exception;
+	public ResponseEntity<String> updateUser(User user, String jwt) throws Exception;
 	public ResponseEntity<String> updatePassword(PasswordData obj) throws Exception;
+	public ResponseEntity<String> removeUserImage(String jwt);
 }

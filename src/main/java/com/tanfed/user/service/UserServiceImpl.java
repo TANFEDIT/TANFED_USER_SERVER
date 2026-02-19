@@ -3,10 +3,8 @@ package com.tanfed.user.service;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +23,7 @@ import com.tanfed.user.entity.*;
 import com.tanfed.user.repo.*;
 import com.tanfed.user.request.PasswordData;
 import com.tanfed.user.response.UserRegResponseData;
+import com.tanfed.user.utils.DesignationAndDept;
 import com.tanfed.user.utils.UserRole;
 
 import jakarta.transaction.Transactional;
@@ -42,9 +41,6 @@ public class UserServiceImpl implements UserService {
 	private UserLogRepo userLogRepo;
 
 	@Autowired
-	private DesignationRepo designationRepo;
-
-	@Autowired
 	private OfficeRepo officeRepo;
 
 	@Autowired
@@ -60,27 +56,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserRegResponseData fetchDataForUserForm(String jwt) throws Exception {
+	public UserRegResponseData fetchDataForUserForm(String jwt, String officeName, String department) throws Exception {
 		try {
 			UserRegResponseData data = new UserRegResponseData();
 
-			List<Designation> list = designationRepo.findAll();
-
-			Set<String> designationLst = new HashSet<String>();
-			Set<String> deptLst = new HashSet<String>();
-
-			list.forEach(temp -> {
-				designationLst.add(temp.getDesignation());
-				if (!temp.getDepartment().equals("") && !temp.getDepartment().equals("none")) {
-					deptLst.add(temp.getDepartment());
-				}
-			});
-
 			User fetchedUser = fetchUser(jwt);
-
-			data.setRoleList(getRoleList(fetchedUser.getRole()));
-			data.setDeptList(deptLst);
-			data.setDesignationList(designationLst);
+			if(department != null && !department.isEmpty()) {
+				data.setRoleList(getRoleList(fetchedUser.getRole(), department));				
+			}
+			data.setDeptList(Arrays.asList(DesignationAndDept.department));
+			data.setDesignationList(Arrays.asList(DesignationAndDept.designation));
 			data.setOfficeNameList(
 					officeRepo.findAll().stream().map(Office::getOfficeName).collect(Collectors.toList()));
 
@@ -91,17 +76,16 @@ public class UserServiceImpl implements UserService {
 
 	}
 
-	private List<UserRole> getRoleList(List<UserRole> roles) {
-		List<UserRole> data = new ArrayList<>(List.of(UserRole.values()));
+	private List<String> getRoleList(List<UserRole> roles, String department) {
 		if (roles.contains(UserRole.SUPERADMIN)) {
-			return data;
+			return Arrays.asList(DesignationAndDept.role.get(department));
 		} else if (roles.contains(UserRole.ROADMIN)) {
-			return data.stream().filter(item -> {
-				return item.equals(UserRole.ROUSER);
+			return Arrays.asList(DesignationAndDept.role.get(department)).stream().filter(item -> {
+				return item.equals("ROUSER");
 			}).collect(Collectors.toList());
 		} else if (roles.contains(UserRole.ESTADMIN) || roles.contains(UserRole.ESTUSER)) {
-			return data.stream().filter(item -> {
-				return !item.equals(UserRole.SUPERADMIN);
+			return Arrays.asList(DesignationAndDept.role.get(department)).stream().filter(item -> {
+				return !item.equals("SUPERADMIN");
 			}).collect(Collectors.toList());
 		} else {
 			return null;
@@ -161,15 +145,14 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public ResponseEntity<String> updateUser(User user) throws Exception {
+	public ResponseEntity<String> updateUser(User user, String jwt) throws Exception {
 		try {
-			User userData = userRepository.findByEmpId(user.getEmpId());
+			String empId = JwtProvider.getEmailFromJwtToken(jwt);
+			User userData = userRepository.findByEmpId(empId);
 			if (userData == null) {
-				throw new UsernameNotFoundException("User not found with empId :" + user.getEmpId());
+				throw new UsernameNotFoundException("User not found with empId :" + empId);
 			} else {
-				userData.setMobileNo1(user.getMobileNo1());
 				userData.setMobileNo2(user.getMobileNo2());
-				userData.setEmailId(user.getEmailId());
 				userData.setCurrentAddress(user.getCurrentAddress());
 				userData.setPermanentAddress(user.getPermanentAddress());
 				userRepository.save(userData);
@@ -214,21 +197,18 @@ public class UserServiceImpl implements UserService {
 	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt,
 			String natureOfEmployment) throws Exception {
 		UserTransfer_PromotionModel res = new UserTransfer_PromotionModel();
-		List<Designation> designation = designationRepo.findAll();
 		List<Office> office = officeRepo.findAll();
-		User fetchedUser = fetchUser(jwt);
-		res.setRoleList(getRoleList(fetchedUser.getRole()));
-		res.setDeptList(
-				designation.stream().filter(i -> !i.getDepartment().equals("") && !i.getDepartment().equals("none"))
-						.map(i -> i.getDepartment()).collect(Collectors.toSet()));
+//		User fetchedUser = fetchUser(jwt);
+//		res.setRoleList(getRoleList(fetchedUser.getRole(), officeName));
+		res.setDeptList(Arrays.asList(DesignationAndDept.department));
 		res.setOfficeList(office.stream().map(i -> i.getOfficeName()).collect(Collectors.toList()));
 		if (officeName != null && !officeName.isEmpty()) {
 			res.setEmpIdList(fetchUsers(officeName).stream().map(i -> i.getEmpId()).collect(Collectors.toList()));
 			if (empId != null && !empId.isEmpty()) {
 				res.setUser(userRepository.findByEmpId(empId));
-				res.setUserTransferData(
-						userTransferRepo.findByEmpId(empId).stream().filter(i -> i.getPersonnelType().equals("transfer"))
-								.reduce((first, second) -> second).orElse(null));
+				res.setUserTransferData(userTransferRepo.findByEmpId(empId).stream()
+						.filter(i -> i.getPersonnelType().equals("transfer")).reduce((first, second) -> second)
+						.orElse(null));
 			}
 		}
 		return res;
@@ -237,7 +217,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ResponseEntity<String> saveUserTransferData(UserTransferData obj) throws Exception {
 		try {
-			if(obj.getRelievedDate() != null) {
+			if (obj.getRelievedDate() != null) {
 				User user = userRepository.findByEmpId(obj.getEmpId());
 				obj.setCurrentDepartment(user.getDepartment());
 				obj.setCurrentDesignation(user.getDesignation());
@@ -249,6 +229,17 @@ public class UserServiceImpl implements UserService {
 		} catch (Exception e) {
 			throw new Exception(e);
 		}
+	}
+
+	@Override
+	public ResponseEntity<String> removeUserImage(String jwt) {
+		User user = fetchUser(jwt);
+		user.setImgName(null);
+		user.setImgType(null);
+		user.setImgData(null);
+
+		userRepository.save(user);
+		return new ResponseEntity<String>("User updated Successfully", HttpStatus.ACCEPTED);
 	}
 
 }

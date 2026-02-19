@@ -37,9 +37,12 @@ public class User {
 	private String natureOfEmployment;
 	private String designation;
 	private String gender;
+	private String deputedAs;
 	private LocalDate dob;
 	private LocalDate doj;
-	private LocalDate deputationjoinDate;
+	private LocalDate deputationJoinDate;
+	private LocalDate deputationFromDate;
+	private LocalDate deputationToDate;
 	private LocalDate joiningDate;
 	private LocalDate dor;
 	private String officeName;

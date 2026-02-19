@@ -1,7 +1,6 @@
 package com.tanfed.user.dto;
 
 import java.util.List;
-import java.util.Set;
 
 import com.tanfed.user.entity.User;
 import com.tanfed.user.entity.UserTransferData;
@@ -20,6 +19,6 @@ public class UserTransfer_PromotionModel {
 	private List<String> empIdList;
 	private User user;
 	private UserTransferData userTransferData;
-	private Set<String> deptList;
+	private List<String> deptList;
 	private List<UserRole> roleList;
 }

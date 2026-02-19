@@ -53,10 +53,9 @@ public class UserController {
 	}
 
 	@GetMapping("/fetchdataforuserform")
-	@PreAuthorize("hasAnyRole('ROLE_SUPERADMIN','ROLE_ESTUSER', 'ROLE_ESTADMIN', 'ROLE_ROADMIN')")
-	public UserRegResponseData fetchDataForUserFormHandler(@RequestHeader("Authorization") String jwt)
-			throws Exception {
-		return userService.fetchDataForUserForm(jwt);
+	public UserRegResponseData fetchDataForUserFormHandler(@RequestHeader("Authorization") String jwt,
+			@RequestParam String officeName, @RequestParam String department) throws Exception {
+		return userService.fetchDataForUserForm(jwt, officeName, department);
 	}
 
 	// private Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -87,6 +86,11 @@ public class UserController {
 		return userService.saveUserImage(empId, img);
 	}
 
+	@PutMapping("/removeuserimage")
+	public ResponseEntity<String> removeUserImgHandler(@RequestHeader("Authorization") String jwt) throws IOException {
+		return userService.removeUserImage(jwt);
+	}
+
 	@PostMapping("/signout")
 	public ResponseEntity<String> saveUserSessionLogHandler(@RequestHeader("Authorization") String jwt)
 			throws Exception {
@@ -94,8 +98,9 @@ public class UserController {
 	}
 
 	@PutMapping("/updateuser")
-	public ResponseEntity<String> updateUserHandler(@RequestBody User user) throws Exception {
-		return userService.updateUser(user);
+	public ResponseEntity<String> updateUserHandler(@RequestBody User user, @RequestHeader("Authorization") String jwt)
+			throws Exception {
+		return userService.updateUser(user, jwt);
 	}
 
 	@PutMapping("/changepasswordafterauth")
@@ -118,15 +123,15 @@ public class UserController {
 	}
 
 	@GetMapping("/getdatafortransfer")
-	public UserTransfer_PromotionModel fetchTransferAndPromotionDataHandler(@RequestParam String officeName,@RequestParam String natureOfEmployment,
-			@RequestParam String empId, @RequestHeader("Authorization") String jwt) throws Exception {
+	public UserTransfer_PromotionModel fetchTransferAndPromotionDataHandler(@RequestParam String officeName,
+			@RequestParam String natureOfEmployment, @RequestParam String empId,
+			@RequestHeader("Authorization") String jwt) throws Exception {
 		return userService.fetchTransferAndPromotionData(officeName, empId, jwt, natureOfEmployment);
 	}
-	
+
 	@PostMapping("/savetransferdata")
 	public ResponseEntity<String> postMethodName(@RequestBody UserTransferData obj) throws Exception {
 		return userService.saveUserTransferData(obj);
 	}
-	
 
 }

@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -33,9 +35,11 @@ import com.tanfed.user.repo.*;
 import com.tanfed.user.request.LoginRequest;
 import com.tanfed.user.response.AuthResponse;
 import com.tanfed.user.service.CustomUserServiceImplementation;
-// import com.tanfed.user.service.MailService;
+import com.tanfed.user.service.MailService;
 import com.tanfed.user.service.UserService;
-// import com.tanfed.user.utils.MailBody;
+import com.tanfed.user.utils.DesignationAndDept;
+import com.tanfed.user.utils.MailBody;
+import com.tanfed.user.utils.UserRole;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,8 +58,8 @@ public class AuthController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	// @Autowired
-	// private MailService mailService;
+	@Autowired
+	private MailService mailService;
 
 	@Autowired
 	private OtpRepo otpRepo;
@@ -141,9 +145,16 @@ public class AuthController {
 					ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString(), null));
 
 			User user = userRepository.findByEmpId(request.getEmpId());
-			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), user.getRole(),
-					user.getOfficeName(), user.getDesignation(), jwtToken, user.getImgName(), user.getImgType(),
+			List<String> additional = new ArrayList<String>();
+			List<List<UserRole>> roles = new ArrayList<>();
+			roles.add(user.getRole());
+			roles.add(Arrays.asList(UserRole.ROADMIN));
+			additional.add("Head Office");
+			additional.add("Tiruvannamalai Regional Office");
+			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), roles, user.getOfficeName(),
+					additional, user.getDesignation(), jwtToken, user.getImgName(), user.getImgType(),
 					user.getImgData());
+			logger.info("res {}", res);
 			return new ResponseEntity<AuthResponse>(res, HttpStatus.OK);
 		} catch (Exception e) {
 			throw new LoginException("signin failed " + e);
@@ -268,31 +279,17 @@ public class AuthController {
 		return jwtTokenValidator.blockList();
 	}
 
-	@Autowired
-	private DesignationRepo designationRepo;
-
 	@GetMapping("/fetchuserdesignation/{empId}")
 	public String getNewDesignation(@PathVariable String empId) {
 //		fetch user data by empId to get designation
 		User byEmpId = userRepository.findByEmpId(empId);
 		String designation = byEmpId.getDesignation();
-
-//		initialize hashmap
-		HashMap<String, String> designationValue = new HashMap<String, String>();
-
-//		fetch designation list from repo and add to hashmap
-		List<Designation> list = designationRepo.findAll();
-		for (Designation temp : list) {
-			String role = temp.getDesignation();
-			String roleCode = temp.getAbbreviation();
-			designationValue.put(role, roleCode);
-		}
-
+		Map<String, String> designationMap = DesignationAndDept.designationMap;
 //		compare user designation to hashmap and set new value 
 		String newValue = null;
-		for (String temp : designationValue.keySet()) {
+		for (String temp : designationMap.keySet()) {
 			if (designation.equals(temp)) {
-				return newValue = designationValue.get(temp);
+				return newValue = designationMap.get(temp);
 			}
 		}
 //		return new designation
@@ -302,6 +299,17 @@ public class AuthController {
 	@GetMapping("/test")
 	public String getMethodName() {
 		return "User Service Depolyed Successfully!";
+	}
+
+	@GetMapping("/testMail")
+	public String sendTestMail() {
+		MailBody body = MailBody.builder().to("karthiksnk210@gmail.com").subject("test").text("test mail").build();
+		try {
+			return mailService.sendMail(body).getBody();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
 	}
 
 }

@@ -1,35 +1,24 @@
-package com.tanfed.user.entity;
+package com.tanfed.user.dto;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-@Table
-public class IssueData {
+public class IssueDataDto {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 	private String officeName;
 	private String empId;
 	private String email;
 	private String issue;
 	private String status;
 	private String response;
-	@Column(unique = true)
 	private String issueId;
 	private LocalDate date;
 	private LocalDate solvedDate;

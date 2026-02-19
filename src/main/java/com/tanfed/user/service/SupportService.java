@@ -3,13 +3,14 @@ package com.tanfed.user.service;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.tanfed.user.dto.SupportDataSuperadminDto;
 import com.tanfed.user.entity.IssueData;
 
 public interface SupportService {
 
-	public ResponseEntity<String> saveIssue(String issue, String jwt) throws Exception;
+	public ResponseEntity<String> saveIssue(String issue, String jwt, MultipartFile file) throws Exception;
 	
 	public List<IssueData> fetchIssuesByEmpId(String jwt) throws Exception;
 

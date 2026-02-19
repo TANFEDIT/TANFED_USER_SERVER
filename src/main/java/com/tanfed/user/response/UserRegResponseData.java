@@ -1,9 +1,7 @@
 package com.tanfed.user.response;
 
 import java.util.List;
-import java.util.Set;
 
-import com.tanfed.user.utils.UserRole;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserRegResponseData {
 
-	private Set<String> deptList;
-	private Set<String> designationList;
+	private List<String> deptList;
+	private List<String> designationList;
 	private List<String> officeNameList;
-	private List<UserRole> roleList;
+	private List<String> roleList;
 }
