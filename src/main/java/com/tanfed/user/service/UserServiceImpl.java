@@ -61,10 +61,13 @@ public class UserServiceImpl implements UserService {
 			UserRegResponseData data = new UserRegResponseData();
 
 			User fetchedUser = fetchUser(jwt);
-			if(department != null && !department.isEmpty()) {
-				data.setRoleList(getRoleList(fetchedUser.getRole(), department));				
+			if (department != null && !department.isEmpty()) {
+				data.setRoleList(getRoleList(fetchedUser.getRole(), department));
 			}
-			data.setDeptList(Arrays.asList(DesignationAndDept.department));
+			List<String> deptFiltered = Arrays.asList(DesignationAndDept.department).stream().filter(
+					i -> officeName.equals("Head Office") ? !i.equals("Regional Office") : i.equals("Regional Office"))
+					.collect(Collectors.toList());
+			data.setDeptList(deptFiltered);
 			data.setDesignationList(Arrays.asList(DesignationAndDept.designation));
 			data.setOfficeNameList(
 					officeRepo.findAll().stream().map(Office::getOfficeName).collect(Collectors.toList()));

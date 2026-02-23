@@ -26,8 +26,10 @@ public class DatabaseInitializer {
 		// Hash the password before inserting
 		String encodedPassword = passwordEncoder.encode("admin@tanfed");
 
-		String sql = "INSERT INTO users (emp_id, emp_name, designation, dob, doj, joining_date, dor, office_name, department,"
-				+ "rc_no, date, mobile_no1, mobile_no2, email_id, aadhar_no, pan_no, password, role, current_address, permanent_address, state, same_as_checked) "
+		String sql = "INSERT INTO users (emp_id, emp_name, nature_of_employment, designation, gender, dob, doj, "
+				+ "dor, office_name, department,"
+				+ "mobile_no1, mobile_no2, email_id, aadhar_no, pan_no, password, role, "
+				+ "current_address, permanent_address, state, same_as_checked, is_blocked) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		String fetch = "SELECT * FROM users WHERE emp_id = ?";
@@ -36,11 +38,11 @@ public class DatabaseInitializer {
 
 		if (users.isEmpty()) {
 			String role = UserRole.SUPERADMIN.name();
-			jdbcTemplate.update(sql, "admin", "Nirmal", "Accountant", "2000-10-02", "2000-10-02", "2000-10-02",
-					"2000-10-02", "Head Office", "IT Wing", "asd123ghj", "2000-10-02", 6382649996L, 6382649996L,
-					"karthiksnk210@gmail.com", 564534312376L, "jyhvgfz7s67", encodedPassword, role,
+			jdbcTemplate.update(sql, "admin", "Nirmal", "Tanfed", "Developer", "Male", "2000-10-02", "2000-10-02",
+					"2000-10-02", "Head Office", "IT Wing", 6382649996L, 9443067676L, "karthiksnk210@gmail.com",
+					564534312376L, "jyhvgfz7s67", encodedPassword, role,
 					"91, St.marys rd, RA Puram, mandaveli, chennai-600028",
-					"91, St.marys rd, RA Puram, mandaveli, chennai-600028", "Tamil Nadu", true);
+					"91, St.marys rd, RA Puram, mandaveli, chennai-600028", "Tamil Nadu", true, false);
 		}
 //		try (Connection connection = dataSource.getConnection()) {
 //			ScriptUtils.executeSqlScript(connection, new ClassPathResource("data.sql"));

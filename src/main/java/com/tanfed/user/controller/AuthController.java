@@ -146,14 +146,16 @@ public class AuthController {
 
 			User user = userRepository.findByEmpId(request.getEmpId());
 			List<String> additional = new ArrayList<String>();
+			List<String> designationList = new ArrayList<String>();
 			List<List<UserRole>> roles = new ArrayList<>();
 			roles.add(user.getRole());
-			roles.add(Arrays.asList(UserRole.ROADMIN));
+//			roles.add(Arrays.asList(UserRole.ROADMIN));
 			additional.add("Head Office");
-			additional.add("Tiruvannamalai Regional Office");
+//			additional.add("Tiruvannamalai Regional Office");
+			designationList.add(user.getDesignation());
+//			designationList.add(user.getDesignation());
 			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), roles, user.getOfficeName(),
-					additional, user.getDesignation(), jwtToken, user.getImgName(), user.getImgType(),
-					user.getImgData());
+					additional, designationList, jwtToken, user.getImgName(), user.getImgType(), user.getImgData());
 			logger.info("res {}", res);
 			return new ResponseEntity<AuthResponse>(res, HttpStatus.OK);
 		} catch (Exception e) {
@@ -169,7 +171,7 @@ public class AuthController {
 				throw new UsernameNotFoundException("User not found with empId :" + empId);
 			}
 			int otp = ThreadLocalRandom.current().nextInt(100000, 1000000);
-
+			checkForPendingTransaction(empId);
 			OtpEntity otpEntity = OtpEntity.builder().otp(otp).empId(empId)
 					.expiryDate(LocalDateTime.now().plusSeconds(60 * 5)).build();
 
@@ -188,23 +190,33 @@ public class AuthController {
 		}
 	}
 
+	private void checkForPendingTransaction(String empId) throws Exception {
+		List<OtpEntity> otpData = otpRepo.findByEmpId(empId);
+		List<OtpEntity> expiredOtpData = new ArrayList<OtpEntity>();
+		List<OtpEntity> pendingOtpData = new ArrayList<OtpEntity>();
+		for (var i : otpData) {
+			if (i.getExpiryDate().isBefore(LocalDateTime.now())) {
+				expiredOtpData.add(i);
+			} else {
+				i.setExpiryDate(LocalDateTime.now());
+				pendingOtpData.add(i);
+			}
+		}
+		otpRepo.deleteAllInBatch(expiredOtpData);
+	}
+
 	@PostMapping("/verifyotp/{empId}/{otp}")
 	public ResponseEntity<String> verifyOtpHandler(@PathVariable String empId, @PathVariable Integer otp)
 			throws Exception {
 		try {
 			OtpEntity userOtp = otpRepo.findByEmpIdAndOtp(empId, otp);
 			if (userOtp == null) {
-				return new ResponseEntity<String>("Invalid OTP", HttpStatus.EXPECTATION_FAILED);
+				return new ResponseEntity<String>("Invalid OTP", HttpStatus.OK);
 			}
 			if (userOtp.getExpiryDate().isBefore(LocalDateTime.now())) {
-				return new ResponseEntity<String>("OTP expired! Try again", HttpStatus.EXPECTATION_FAILED);
+				return new ResponseEntity<String>("OTP expired! Try again", HttpStatus.OK);
 			}
-			if (userOtp.getOtp().equals(otp)) {
-				otpRepo.deleteById(userOtp.getId());
-				return new ResponseEntity<String>("OTP verified Successfully", HttpStatus.OK);
-			} else {
-				return new ResponseEntity<String>("OTP verification failed!", HttpStatus.EXPECTATION_FAILED);
-			}
+			return new ResponseEntity<String>("OTP verified Successfully", HttpStatus.OK);
 
 		} catch (Exception e) {
 			throw new Exception(e);

@@ -18,7 +18,7 @@ public class AuthResponse {
 	private List<List<UserRole>> role;
 	private String officeName;
 	private List<String> additionalOfficeName;
-	private String designation;
+	private List<String> designation;
 	private String token;
 	private String imgName;
 	private String imgType;
