@@ -39,7 +39,7 @@ public class SupportServiceImpl implements SupportService {
 		try {
 			User user = userService.fetchUser(jwt);
 			String filename = null;
-			if (!file.isEmpty()) {
+			if (file != null && !file.isEmpty()) {
 				String uploadDir = "C:/uploads";
 
 				filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
