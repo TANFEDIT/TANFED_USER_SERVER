@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,8 +38,8 @@ public class SupportHandler {
 	private SupportService supportService;
 	private static Logger logger = LoggerFactory.getLogger(SupportHandler.class);
 
-	@PostMapping("/saveissue/{issue}")
-	public ResponseEntity<String> saveIssueHandler(@PathVariable String issue, @RequestBody(required = false) MultipartFile file,
+	@PostMapping("/saveissue")
+	public ResponseEntity<String> saveIssueHandler(@RequestPart String issue, @RequestBody(required = false) MultipartFile file,
 			@RequestHeader("Authorization") String jwt) throws Exception {
 		logger.info(issue);
 		return supportService.saveIssue(issue, jwt, file);
