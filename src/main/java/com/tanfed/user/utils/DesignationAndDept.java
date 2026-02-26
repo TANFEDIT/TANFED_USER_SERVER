@@ -15,7 +15,9 @@ public class DesignationAndDept {
 			"HO - Marketing", "HO - SPAI", "HO - GeneralAccounts", "HO - BillsAccounts", "HO - Civil",
 			"HO - InternalAudit", };
 
-	
+	public static String[] empIds = { "P00051", "kev01", "S00029" };
+
+	public static Map<String, String[]> additionalOffice = new HashMap<String, String[]>();
 	public static Map<String, String> designationMap = new HashMap<String, String>();
 	public static Map<String, String[]> role = new HashMap<String, String[]>();
 	static {
@@ -44,6 +46,11 @@ public class DesignationAndDept {
 		designationMap.put("General Manager - Marketing", "GM-Mark");
 		designationMap.put("General Manager - Fertiliser", "GM-Fert");
 		designationMap.put("Managing Director", "Mng-Dir");
+
+		additionalOffice.put("P00051", new String[] { "Dindigul Regional Office", "TANFED Bio&CF Complex" });
+		additionalOffice.put("kev01", new String[] { "Head Office", "TANFED Bio&CF Complex" });
+		additionalOffice.put("vpmAdminIT", new String[] { "Head Office", "TANFED Bio&CF Complex" });
+		additionalOffice.put("S00029", new String[] { "Pamani Fertiliser", "Thanjavur@Mannargudi Regional Office" });
 
 	}
 

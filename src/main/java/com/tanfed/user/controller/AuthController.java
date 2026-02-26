@@ -6,8 +6,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -30,16 +32,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tanfed.user.config.JwtProvider;
 import com.tanfed.user.config.JwtTokenValidator;
+import com.tanfed.user.dto.OfficeInfo;
 import com.tanfed.user.entity.*;
 import com.tanfed.user.repo.*;
 import com.tanfed.user.request.LoginRequest;
 import com.tanfed.user.response.AuthResponse;
 import com.tanfed.user.service.CustomUserServiceImplementation;
 import com.tanfed.user.service.MailService;
+import com.tanfed.user.service.MasterService;
 import com.tanfed.user.service.UserService;
 import com.tanfed.user.utils.DesignationAndDept;
 import com.tanfed.user.utils.MailBody;
-import com.tanfed.user.utils.UserRole;
 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -121,6 +124,9 @@ public class AuthController {
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
 
+	@Autowired
+	private MasterService masterService;
+
 	@PostMapping("/signin")
 	public ResponseEntity<AuthResponse> signinHandler(@RequestBody LoginRequest request) throws Exception {
 		try {
@@ -145,17 +151,14 @@ public class AuthController {
 					ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString(), null));
 
 			User user = userRepository.findByEmpId(request.getEmpId());
-			List<String> additional = new ArrayList<String>();
-			List<String> designationList = new ArrayList<String>();
-			List<List<UserRole>> roles = new ArrayList<>();
-			roles.add(user.getRole());
-//			roles.add(Arrays.asList(UserRole.ROADMIN));
-			additional.add("Head Office");
-//			additional.add("Tiruvannamalai Regional Office");
-			designationList.add(user.getDesignation());
-//			designationList.add(user.getDesignation());
-			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), roles, user.getOfficeName(),
-					additional, designationList, jwtToken, user.getImgName(), user.getImgType(), user.getImgData());
+			OfficeInfo officeInfo = masterService.getOfficeInfoByOfficeNameHandler(user.getOfficeName(), "Bearer " + jwtToken);
+
+			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), user.getRole(),
+					officeInfo.getTanNo(), officeInfo.getOfficeType(), officeInfo.getDoor(), officeInfo.getStreet(),
+					officeInfo.getDistrict(), officeInfo.getPincode(), user.getOfficeName(),
+					Optional.ofNullable(DesignationAndDept.additionalOffice.get(user.getEmpId())).map(Arrays::asList)
+							.orElse(Collections.emptyList()),
+					user.getDesignation(), jwtToken, user.getImgName(), user.getImgType(), user.getImgData());
 			logger.info("res {}", res);
 			return new ResponseEntity<AuthResponse>(res, HttpStatus.OK);
 		} catch (Exception e) {
