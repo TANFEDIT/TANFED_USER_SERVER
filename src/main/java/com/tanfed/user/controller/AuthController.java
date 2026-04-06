@@ -5,11 +5,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -37,7 +34,9 @@ import com.tanfed.user.entity.*;
 import com.tanfed.user.repo.*;
 import com.tanfed.user.request.LoginRequest;
 import com.tanfed.user.response.AuthResponse;
+import com.tanfed.user.service.AdditionalChargeService;
 import com.tanfed.user.service.CustomUserServiceImplementation;
+import com.tanfed.user.service.DailyScheduler;
 import com.tanfed.user.service.MailService;
 import com.tanfed.user.service.MasterService;
 import com.tanfed.user.service.UserService;
@@ -127,6 +126,9 @@ public class AuthController {
 	@Autowired
 	private MasterService masterService;
 
+	@Autowired
+	private AdditionalChargeService additionalChargeService;
+
 	@PostMapping("/signin")
 	public ResponseEntity<AuthResponse> signinHandler(@RequestBody LoginRequest request) throws Exception {
 		try {
@@ -151,14 +153,14 @@ public class AuthController {
 					ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toString(), null));
 
 			User user = userRepository.findByEmpId(request.getEmpId());
-			OfficeInfo officeInfo = masterService.getOfficeInfoByOfficeNameHandler(user.getOfficeName(), "Bearer " + jwtToken);
+			OfficeInfo officeInfo = masterService.getOfficeInfoByOfficeNameHandler(user.getOfficeName(),
+					"Bearer " + jwtToken);
 
 			AuthResponse res = new AuthResponse(user.getEmpId(), user.getEmpName(), user.getRole(),
 					officeInfo.getTanNo(), officeInfo.getOfficeType(), officeInfo.getDoor(), officeInfo.getStreet(),
 					officeInfo.getDistrict(), officeInfo.getPincode(), user.getOfficeName(),
-					Optional.ofNullable(DesignationAndDept.additionalOffice.get(user.getEmpId())).map(Arrays::asList)
-							.orElse(Collections.emptyList()),
-					user.getDesignation(), jwtToken, user.getImgName(), user.getImgType(), user.getImgData());
+					additionalChargeService.getAdditionalOfficeNameList(user.getEmpId()), user.getDesignation(),
+					jwtToken, user.getImgName(), user.getImgType(), user.getImgData());
 			logger.info("res {}", res);
 			return new ResponseEntity<AuthResponse>(res, HttpStatus.OK);
 		} catch (Exception e) {
@@ -323,6 +325,15 @@ public class AuthController {
 			e.printStackTrace();
 			return "";
 		}
+	}
+
+	@Autowired
+	DailyScheduler dailyScheduler;
+
+	@GetMapping("/uttest")
+	public String usertransfer() {
+		dailyScheduler.validateAndUpdateUserAccess();
+		return "ok";
 	}
 
 }

@@ -50,7 +50,7 @@ public class DailyScheduler {
 		sessionManagerRepo.deleteAll();
 	}
 
-	@Scheduled(cron = "0 0 23 * * ?", zone = "Asia/Kolkata")
+	@Scheduled(cron = "0 0 1 * * ?", zone = "Asia/Kolkata")
 	public void dailyJob() {
 		if (users.isEmpty()) {
 			users.addAll(userRepository.findAll());
@@ -59,13 +59,19 @@ public class DailyScheduler {
 	}
 
 	public void validateAndUpdateUserAccess() {
+		if (users.isEmpty()) {
+			users.addAll(userRepository.findAll());
+		}
+		validateEmployeeAccess();
 		List<UserTransferData> userList = userTransferRepo.findAll();
 		UpdatePromotionData(
 				userList.stream().filter(i -> i.getPersonnelType().equals("promotion")).collect(Collectors.toList()));
 		updateTransferData(
 				userList.stream().filter(i -> i.getPersonnelType().equals("transfer")).collect(Collectors.toList()));
-		updateInchargeAndAdditionalChargeData(userList.stream().filter(
-				i -> (i.getPersonnelType().equals("inCharge") || i.getPersonnelType().equals("additionalCharge")))
+//		updateInchargeData(
+//				userList.stream().filter(i -> i.getPersonnelType().equals("inCharge")).collect(Collectors.toList()));
+		checkAndUpdateFacExtension(userList.stream()
+				.filter(i -> i.getPersonnelType().equals("dateExtension") && i.getExtensionFor().equals("FAC"))
 				.collect(Collectors.toList()));
 	}
 
@@ -90,48 +96,65 @@ public class DailyScheduler {
 		List<UserTransferData> userListFinal = new ArrayList<>(userMap.values());
 
 		for (var i : userListFinal) {
+			User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+					.get(0);
 			if (i.getRelievedDate() != null && i.getJoiningDate() == null
 					&& i.getRelievedDate().isEqual(LocalDate.now())) {
-				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
-						.get(0);
 				user.setIsBlocked(true);
-				userRepository.save(user);
 			}
-			if (i.getRelievedDate() == null && i.getJoiningDate() != null
-					&& i.getJoiningDate().isEqual(LocalDate.now())) {
-				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
-						.get(0);
+			if (i.getJoiningDate() != null && i.getJoiningDate().isEqual(LocalDate.now())) {
 				user.setDepartment(i.getNewDepartment());
 				user.setDesignation(i.getNewDesignation());
 				user.setOfficeName(i.getNewOfficeName());
 				user.setRole(i.getNewRole());
-				userRepository.save(user);
+				user.setIsBlocked(false);
 			}
+			userRepository.save(user);
 		}
 	}
 
-	public void updateInchargeAndAdditionalChargeData(List<UserTransferData> userList) {
+//	public void updateInchargeData(List<UserTransferData> userList) {
+//		for (var i : userList) {
+//			User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+//					.get(0);
+//			if (i.getFromDate() != null && i.getFromDate().isEqual(LocalDate.now())) {
+//				user.getRole().addAll(i.getNewRole());
+//			}
+//			if (i.getCancelDate() != null && i.getCancelDate().isEqual(LocalDate.now())) {
+//				user.setRole(i.getCurrentRole());
+//			}
+//			userRepository.save(user);
+//		}
+//	}
+
+	public void checkAndUpdateFacExtension(List<UserTransferData> userList) {
 		for (var i : userList) {
+			User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
+					.get(0);
 			if (i.getFromDate() != null && i.getFromDate().isEqual(LocalDate.now())) {
-				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
-						.get(0);
-				user.setDepartment(user.getDepartment() + ", " + i.getNewDepartment());
-				user.setOfficeName(i.getPersonnelType().equals("additionalCharge")
-						? user.getOfficeName() + ", " + i.getNewOfficeName()
-						: user.getOfficeName());
-				user.getRole().addAll(i.getNewRole());
-				userRepository.save(user);
+				user.setIsBlocked(false);
 			}
-			if (i.getToDate() != null && i.getToDate().isEqual(LocalDate.now())) {
-				User user = users.stream().filter(u -> u.getEmpId().equals(i.getEmpId())).collect(Collectors.toList())
-						.get(0);
-				user.setDepartment(i.getCurrentDepartment());
-				user.setOfficeName(i.getPersonnelType().equals("additionalCharge") ? i.getCurrentOfficeName()
-						: user.getOfficeName());
-				user.setRole(i.getCurrentRole());
-				userRepository.save(user);
+			if (i.getToDate() != null
+					&& (i.getToDate().isEqual(LocalDate.now()) || i.getToDate().isBefore(LocalDate.now()))) {
+				user.setIsBlocked(true);
+			}
+			userRepository.save(user);
+		}
+	}
+
+	public void validateEmployeeAccess() {
+		List<User> govEmps = users.stream().filter(i -> i.getNatureOfEmployment().equals("Gov. Employee"))
+				.collect(Collectors.toList());
+		for (var gov : govEmps) {
+			if ((gov.getDeputedAs().equals("Transfer") && gov.getDeputationJoinDate().equals(LocalDate.now()))
+					|| (gov.getDeputedAs().equals("FAC") && gov.getDeputationFromDate().equals(LocalDate.now()))) {
+				gov.setIsBlocked(false);
+			}
+			if (gov.getDeputedAs().equals("FAC") && gov.getDeputationToDate().equals(LocalDate.now())) {
+				gov.setIsBlocked(true);
 			}
 		}
+		userRepository.saveAll(govEmps);
 	}
 
 }

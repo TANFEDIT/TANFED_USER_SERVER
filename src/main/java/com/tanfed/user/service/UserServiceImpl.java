@@ -1,12 +1,15 @@
 package com.tanfed.user.service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tanfed.user.config.JwtProvider;
 import com.tanfed.user.config.JwtTokenValidator;
+import com.tanfed.user.dto.UserPersonnelView;
 import com.tanfed.user.dto.UserTransfer_PromotionModel;
 import com.tanfed.user.entity.*;
 import com.tanfed.user.repo.*;
@@ -44,10 +49,14 @@ public class UserServiceImpl implements UserService {
 	private OfficeRepo officeRepo;
 
 	@Autowired
+	private ObjectMapper mapper;
+
+	@Autowired
 	private UserTransferRepo userTransferRepo;
 
 	@Autowired
 	private SessionManagerRepo sessionManagerRepo;
+	private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	@Override
 	public User fetchUser(String jwt) {
@@ -198,37 +207,151 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserTransfer_PromotionModel fetchTransferAndPromotionData(String officeName, String empId, String jwt,
-			String natureOfEmployment) throws Exception {
+			String natureOfEmployment, String personnelType, String department, String extensionFor) throws Exception {
 		UserTransfer_PromotionModel res = new UserTransfer_PromotionModel();
 		List<Office> office = officeRepo.findAll();
-//		User fetchedUser = fetchUser(jwt);
-//		res.setRoleList(getRoleList(fetchedUser.getRole(), officeName));
-		res.setDeptList(Arrays.asList(DesignationAndDept.department));
+		User fetchedUser = fetchUser(jwt);
 		res.setOfficeList(office.stream().map(i -> i.getOfficeName()).collect(Collectors.toList()));
+
+		if (personnelType != null && !personnelType.isEmpty() && personnelType.equals("view")) {
+			List<UserTransferData> userTransferData = userTransferRepo.findAll();
+			res.setUserViewData(userTransferData.stream().filter(i -> (i.getPersonnelType().equals("inCharge")
+					&& i.getCancelDate() == null)
+					|| (i.getPersonnelType().equals("additionalCharge") && i.getCancelDate() == null
+							&& (LocalDate.now()
+									.isAfter(i.getFromDate())
+									&& (LocalDate.now().isBefore(i.getToDate())
+											|| LocalDate.now().equals(i.getToDate()))))
+					|| (i.getPersonnelType().equals("dateExtension") && i.getCancelDate() == null
+							&& (i.getExtensionFor().equals("additionalCharge") || i.getExtensionFor().equals("FAC"))
+							&& (LocalDate.now().isAfter(i.getFromDate()) && (LocalDate.now().isBefore(i.getToDate())
+									|| LocalDate.now().equals(i.getToDate())))))
+					.map(i -> new UserPersonnelView(i.getId(), i.getCreatedAt(), i.getEmpId(), i.getEmpName(),
+							i.getCurrentDesignation(), i.getCurrentDepartment(), i.getCurrentOfficeName(),
+							i.getCurrentRole(), i.getNewOfficeName(), i.getNewRole(), i.getNewDepartment(),
+							i.getPersonnelType(), i.getExtensionFor() != null ? i.getExtensionFor() : null))
+					.collect(Collectors.toList()));
+			res.getUserViewData().addAll(userRepository.findAll().stream()
+					.filter(i -> i.getNatureOfEmployment().equals("Gov. Employee") && i.getDeputedAs().equals("FAC")
+							&& i.getIsBlocked().equals(false))
+					.map(i -> new UserPersonnelView(i.getId(), i.getDeputationFromDate(), i.getEmpId(), i.getEmpName(),
+							i.getDesignation(), i.getDepartment(), i.getOfficeName(), i.getRole(), i.getOfficeName(),
+							i.getRole(), i.getDepartment(), "FAC", null))
+					.collect(Collectors.toList()));
+		}
 		if (officeName != null && !officeName.isEmpty()) {
-			res.setEmpIdList(fetchUsers(officeName).stream().map(i -> i.getEmpId()).collect(Collectors.toList()));
+			if ("dateExtension".equals(personnelType)) {
+				if ("FAC".equals(extensionFor)) {
+					res.setEmpIdList(fetchUsers(officeName).stream()
+							.filter(i -> i.getNatureOfEmployment().equals("Gov. Employee")
+									&& i.getDeputedAs().equals("FAC")
+									&& !LocalDate.now().isAfter(i.getDeputationToDate()))
+							.map(i -> i.getEmpId()).collect(Collectors.toSet()));
+				} else {
+					res.setEmpIdList(userTransferRepo.findAll().stream().filter(i -> (i.getPersonnelType()
+							.equals(extensionFor)
+							|| (i.getPersonnelType().equals(personnelType) && i.getExtensionFor().equals(extensionFor)))
+							&& ((i.getCancelDate() != null && LocalDate.now().isBefore(i.getCancelDate()))
+									|| (i.getToDate() != null && !LocalDate.now().isAfter(i.getToDate())
+											&& i.getCancelDate() == null)))
+							.map(i -> i.getEmpId()).collect(Collectors.toSet()));
+				}
+			} else {
+				res.setEmpIdList(fetchUsers(officeName).stream()
+						.filter(i -> i.getNatureOfEmployment().equals(natureOfEmployment)).map(i -> i.getEmpId())
+						.collect(Collectors.toSet()));
+			}
+			res.setDesignationList(Arrays.asList(DesignationAndDept.designation));
+			res.setDeptList(Arrays.asList(DesignationAndDept.department));
 			if (empId != null && !empId.isEmpty()) {
+				if ("dateExtension".equals(personnelType)) {
+					res.setUserTransferData(userTransferRepo.findByEmpId(empId).stream().filter(i -> i
+							.getPersonnelType().equals(extensionFor)
+							|| (i.getPersonnelType().equals(personnelType) && i.getExtensionFor().equals(extensionFor)))
+							.reduce((first, second) -> second).orElse(null));
+				}
 				res.setUser(userRepository.findByEmpId(empId));
-				res.setUserTransferData(userTransferRepo.findByEmpId(empId).stream()
-						.filter(i -> i.getPersonnelType().equals("transfer")).reduce((first, second) -> second)
-						.orElse(null));
+				if ("transfer".equals(personnelType)) {
+					res.setUserTransferData(userTransferRepo.findByEmpId(empId).stream()
+							.filter(i -> i.getPersonnelType().equals("transfer") && i.getJoiningDate() == null)
+							.reduce((first, second) -> second).orElse(null));
+				}
+				if (department != null && !department.isEmpty()) {
+					res.setRoleList(getRoleList(fetchedUser.getRole(), department));
+				}
 			}
 		}
 		return res;
 	}
 
 	@Override
-	public ResponseEntity<String> saveUserTransferData(UserTransferData obj) throws Exception {
+	public ResponseEntity<String> saveUserTransferData(String obj, MultipartFile file) throws Exception {
 		try {
-			if (obj.getRelievedDate() != null) {
-				User user = userRepository.findByEmpId(obj.getEmpId());
-				obj.setCurrentDepartment(user.getDepartment());
-				obj.setCurrentDesignation(user.getDesignation());
-				obj.setCurrentOfficeName(user.getOfficeName());
-				obj.setCurrentRole(user.getRole());
+			logger.info(obj);
+			UserTransferData userData = mapper.readValue(obj, UserTransferData.class);
+
+			if (userData.getRelievedDate() != null) {
+				User user = userRepository.findByEmpId(userData.getEmpId());
+				userData.setCurrentDepartment(user.getDepartment());
+				userData.setCurrentDesignation(user.getDesignation());
+				userData.setCurrentOfficeName(user.getOfficeName());
+				userData.setCurrentRole(user.getRole());
+				if (userData.getRelievedDate().equals(LocalDate.now())
+						|| userData.getRelievedDate().isBefore(LocalDate.now())) {
+					user.setIsBlocked(true);
+					userRepository.save(user);
+				}
+
 			}
-			userTransferRepo.save(obj);
-			return new ResponseEntity<String>("User updated Successfully", HttpStatus.ACCEPTED);
+			if (userData.getPersonnelType().equals("transfer") && userData.getJoiningDate() != null) {
+				UserTransferData userTransferData = userTransferRepo.findById(userData.getId()).get();
+				userTransferData.setJoiningDate(userData.getJoiningDate());
+				userTransferRepo.save(userTransferData);
+				userData.setId(null);
+				if (userData.getJoiningDate().equals(LocalDate.now())
+						|| userData.getJoiningDate().isBefore(LocalDate.now())) {
+					User user = userRepository.findByEmpId(userData.getEmpId());
+					user.setDepartment(userData.getNewDepartment());
+					user.setDesignation(userData.getNewDesignation());
+					user.setOfficeName(userData.getNewOfficeName());
+					user.setRole(userData.getNewRole());
+					user.setIsBlocked(false);
+					userRepository.save(user);
+				}
+			}
+			if (file != null) {
+				userData.setFileData(file.getBytes());
+				userData.setFileName(file.getOriginalFilename());
+				userData.setFileType(file.getContentType());
+			}
+			if (userData.getCancelDate() != null) {
+				if (userData.getPersonnelType().equals("FAC") && userData.getCancelDate().equals(LocalDate.now())
+						|| userData.getCancelDate().isBefore(LocalDate.now())) {
+					User user = userRepository.findByEmpId(userData.getEmpId());
+					user.setIsBlocked(true);
+					userRepository.save(user);
+					userData.setId(null);
+				} else {
+					UserTransferData userTransferData = userTransferRepo.findById(userData.getId()).get();
+					userTransferData.setCancelDate(userData.getCancelDate());
+					userTransferRepo.save(userTransferData);
+					userData.setId(null);
+				}
+			}
+			if (userData.getPersonnelType().equals("promotion") && userData.getJoiningDate() != null) {
+				if (userData.getJoiningDate().equals(LocalDate.now())
+						|| userData.getJoiningDate().isBefore(LocalDate.now())) {
+					User user = userRepository.findByEmpId(userData.getEmpId());
+					user.setDepartment(userData.getNewDepartment());
+					user.setDesignation(userData.getNewDesignation());
+					user.setOfficeName(userData.getNewOfficeName());
+					user.setRole(userData.getNewRole());
+					userRepository.save(user);
+				}
+			}
+
+			userTransferRepo.save(userData);
+			return new ResponseEntity<String>("User updated Successfully", HttpStatus.CREATED);
 		} catch (Exception e) {
 			throw new Exception(e);
 		}

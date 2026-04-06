@@ -2,6 +2,7 @@ package com.tanfed.user.dto;
 
 import java.util.List;
 
+import com.tanfed.user.utils.UserRole;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class OfficeHeader {
 
 	private String empId;
-	private List<String> role;
+	private List<UserRole> role;
 	private String name;
 	private String designation;
 	

@@ -1,6 +1,5 @@
 package com.tanfed.user.controller;
 
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -39,8 +38,9 @@ public class SupportHandler {
 	private static Logger logger = LoggerFactory.getLogger(SupportHandler.class);
 
 	@PostMapping("/saveissue")
-	public ResponseEntity<String> saveIssueHandler(@RequestPart String issue, @RequestBody(required = false) MultipartFile file,
-			@RequestHeader("Authorization") String jwt) throws Exception {
+	public ResponseEntity<String> saveIssueHandler(@RequestPart String issue,
+			@RequestBody(required = false) MultipartFile file, @RequestHeader("Authorization") String jwt)
+			throws Exception {
 		logger.info(issue);
 		return supportService.saveIssue(issue, jwt, file);
 	}
@@ -69,19 +69,14 @@ public class SupportHandler {
 
 	@GetMapping("/download/{fileName}")
 	public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) throws Exception {
-
-	    Path path = Paths.get("C:/uploads").resolve(fileName);
-
-	    Resource resource = new UrlResource(path.toUri());
-
-	    if (!resource.exists()) {
-	        throw new RuntimeException("File not found");
-	    }
-
-	    return ResponseEntity.ok()
-	            .header(HttpHeaders.CONTENT_DISPOSITION,
-	                    "attachment; filename=\"" + resource.getFilename() + "\"")
-	            .body(resource);
+		Path path = Paths.get("C:/uploads").resolve(fileName);
+		Resource resource = new UrlResource(path.toUri());
+		if (!resource.exists()) {
+			throw new RuntimeException("File not found");
+		}
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+				.body(resource);
 	}
-	
+
 }

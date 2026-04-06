@@ -1,6 +1,7 @@
 package com.tanfed.user.response;
 
 import java.util.List;
+import java.util.Set;
 
 import com.tanfed.user.utils.UserRole;
 
@@ -23,7 +24,7 @@ public class AuthResponse {
 	private String district;
 	private Integer pincode;
 	private String officeName;
-	private List<String> additionalOfficeName;
+	private Set<String> additionalOfficeName;
 	private String designation;
 	private String token;
 	private String imgName;

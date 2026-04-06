@@ -1,6 +1,7 @@
 package com.tanfed.user.controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 // import org.slf4j.Logger;
@@ -14,12 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.tanfed.user.dto.UserTransfer_PromotionModel;
 import com.tanfed.user.entity.User;
-import com.tanfed.user.entity.UserTransferData;
 import com.tanfed.user.repo.UserRepository;
 import com.tanfed.user.request.PasswordData;
 import com.tanfed.user.response.UserRegResponseData;
@@ -65,14 +66,20 @@ public class UserController {
 	public ResponseEntity<String> createUserHandler(@RequestBody User user) throws Exception {
 		try {
 
-			 String rawPassword = user.getPassword();
+			String rawPassword = user.getPassword();
 //			String rawPassword = "Pass@123";
 			user.setPassword(passwordEncoder.encode(rawPassword));
-			user.setIsBlocked(false);
+
+			if (user.getNatureOfEmployment().equals("Gov. Employee") && ((user.getDeputedAs().equals("Transfer")
+					&& user.getDeputationJoinDate().isAfter(LocalDate.now()))
+					|| (user.getDeputedAs().equals("FAC") && user.getDeputationFromDate().isAfter(LocalDate.now())))) {
+				user.setIsBlocked(true);
+			} else {
+				user.setIsBlocked(false);
+			}
 			userRepository.save(user);
 
-			 mailService.sendmailPassword(user.getEmailId(), rawPassword,
-			 user.getEmpId());
+			mailService.sendmailPassword(user.getEmailId(), rawPassword, user.getEmpId());
 			// logger.info("email{}", user.getEmailId());
 			return new ResponseEntity<String>("User Registered Successfully", HttpStatus.CREATED);
 		} catch (Exception e) {
@@ -124,14 +131,17 @@ public class UserController {
 
 	@GetMapping("/getdatafortransfer")
 	public UserTransfer_PromotionModel fetchTransferAndPromotionDataHandler(@RequestParam String officeName,
-			@RequestParam String natureOfEmployment, @RequestParam String empId,
+			@RequestParam String extensionFor, @RequestParam String natureOfEmployment, @RequestParam String empId,
+			@RequestParam String personnelType, @RequestParam String department,
 			@RequestHeader("Authorization") String jwt) throws Exception {
-		return userService.fetchTransferAndPromotionData(officeName, empId, jwt, natureOfEmployment);
+		return userService.fetchTransferAndPromotionData(officeName, empId, jwt, natureOfEmployment, personnelType,
+				department, extensionFor);
 	}
 
 	@PostMapping("/savetransferdata")
-	public ResponseEntity<String> postMethodName(@RequestBody UserTransferData obj) throws Exception {
-		return userService.saveUserTransferData(obj);
+	public ResponseEntity<String> postMethodName(@RequestPart String obj,
+			@RequestPart(required = false) MultipartFile file) throws Exception {
+		return userService.saveUserTransferData(obj, file);
 	}
 
 }
